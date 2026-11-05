@@ -1,0 +1,10 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+const call=vi.hoisted(()=>vi.fn());
+vi.mock('../src/ipc',()=>({invoke:call}));
+vi.mock('@tauri-apps/api/event',()=>({listen:()=>Promise.resolve(()=>{})}));
+vi.mock('../src/auth',()=>({useAuth:()=>({user:{id:'one'},users:[{id:'one',email:'one@gmail.com'},{id:'two',email:'two@gmail.com'}]})}));
+vi.mock('../src/AccountDropdown',()=>({default:({onChange}:{onChange:(value:string)=>void})=><button type="button" onClick={()=>onChange('two')}>Choose Work account</button>}));
+import FlowSettings from '../src/FlowSettings';
+afterEach(cleanup);
+it('starts Flow with the chosen account and local folder without requesting a cloud destination',async()=>{call.mockImplementation((_command,args)=>Promise.resolve(args.action==='list'?{pairs:[],running:null}:null));render(<FlowSettings/>);fireEvent.click(screen.getByRole('button',{name:'Add folder'}));fireEvent.click(screen.getByRole('button',{name:'Choose Work account'}));fireEvent.change(screen.getByLabelText('Local folder'),{target:{value:'D:\\Projects'}});fireEvent.click(screen.getByRole('button',{name:'Start Flow'}));await waitFor(()=>expect(call).toHaveBeenCalledWith('flow_command',{action:'add',args:{account:'two',local:'D:\\Projects'}}));expect(screen.queryByLabelText('Google Drive folder')).toBeNull();});

@@ -1,0 +1,10 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {render,screen,fireEvent,waitFor,cleanup} from '@testing-library/react';
+const native=vi.hoisted(()=>vi.fn());
+vi.mock('@tauri-apps/api/core',()=>({isTauri:()=>true,invoke:native}));
+import StartupSettings from '../src/StartupSettings';
+import {validLocation} from '../src/startupLocation';
+afterEach(()=>{cleanup();native.mockReset();});
+it('does not offer development builds for Windows auto-launch',async()=>{native.mockResolvedValue({launch:false,minimized:false,restore:false,tray:false,development:true,trayReady:true});render(<StartupSettings/>);await waitFor(()=>expect(screen.getByRole<HTMLButtonElement>('switch',{name:'Start minimized'}).disabled).toBe(false));expect(screen.getByRole<HTMLButtonElement>('switch',{name:'Launch at login'}).disabled).toBe(true);});
+it('persists tray behavior through native settings and reports failures',async()=>{native.mockResolvedValueOnce({launch:false,minimized:false,restore:false,tray:false,development:false,trayReady:true}).mockRejectedValueOnce('Could not save startup settings');render(<StartupSettings/>);const button=await screen.findByRole('switch',{name:'Keep running in the tray'});await waitFor(()=>expect((button as HTMLButtonElement).disabled).toBe(false));fireEvent.click(button);await waitFor(()=>expect(screen.getByRole('alert').textContent).toContain('Could not save'));expect(button.getAttribute('aria-checked')).toBe('false');});
+it('restores only valid accounts and folders',()=>{expect(validLocation({page:'Storage',scope:'work',folder:null},['work'],[])).toEqual({page:'Storage',scope:'work',folder:null});expect(validLocation({page:'My files',scope:'removed',folder:null},[],[]).page).toBe('Home');expect(validLocation({page:'My files',scope:'work',folder:'deleted'},['work'],[])).toEqual({page:'Home',scope:'work',folder:null});});

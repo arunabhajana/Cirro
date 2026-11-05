@@ -1,0 +1,125 @@
+# Dependencies and package-manager caches
+node_modules/
+.npm-cache/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+
+# Frontend and native build outputs
+/dist/
+/build/
+/out/
+/target/
+/src-tauri/target/
+/src-tauri/gen/
+*.tsbuildinfo
+
+# Copied third-party PDF runtime assets; regenerated from pdfjs-dist by npm.
+/public/pdfjs/
+*.wasm
+*.bcmap
+*.pfb
+*.js.map
+*.mjs.map
+*.css.map
+
+# Local documentation (README and third-party licenses remain included)
+/docs/
+
+# Environment files and local configuration
+.env
+.env.*
+*.env
+*.env.*
+.envrc
+*.local
+
+# OAuth downloads, service credentials and signing material
+client_secret*.json
+credentials.json
+service-account*.json
+*.key
+*.key.pub
+*.pem
+*.pfx
+*.p12
+*.jks
+*.keystore
+.cirro-signing/
+.aws/
+
+# Downloaded Flow engine: release CI fetches and verifies this executable.
+# Keep flow-engine/manifest.json, COPYING and README.txt committed.
+/src-tauri/flow-engine/rclone.exe
+
+# Packaged installers, archives and crash/debug binaries
+*.exe
+*.msi
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+*.pdb
+*.dmp
+*.dump
+
+# Local QA, coverage and test reports
+/.qa/
+/coverage/
+/playwright-report/
+/test-results/
+/vitest-results/
+*.lcov
+
+# Temporary files, logs, backups and caches
+/tmp/
+/temp/
+/.cache/
+/.vite/
+*.tmp
+*.temp
+*.part
+*.log
+*.log.*
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*~
+
+# Runtime databases and user data
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Local editor / operating-system files
+/.idea/
+/.vs/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local assistant state and clipboard captures
+/.codex/
+/.agents/
+/codex-clipboard-*.png
+/screenshots/

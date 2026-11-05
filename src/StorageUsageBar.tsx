@@ -1,0 +1,5 @@
+import type {CSSProperties} from 'react';
+export default function StorageUsageBar({accounts}:{accounts:{id:string;name:string;used:number;total:number;color:string}[]}){
+ const known=accounts.length>0&&accounts.every(account=>account.total>0);const total=accounts.reduce((n,a)=>n+Math.max(0,a.total),0);const used=accounts.reduce((n,a)=>n+Math.max(0,a.used),0);const denominator=known?Math.max(total,used):used;const percent=total?Math.min(100,used/total*100):0;
+ return <div className="cirro-progress storage-usage-segments" role="meter" aria-label={known?'Storage used by account':'Share of used storage by account; capacity unavailable'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={known?percent:undefined} aria-valuetext={accounts.map(a=>`${a.name}: ${a.used.toFixed(1)} GB used`).join(', ')}>{accounts.map(account=><span key={account.id} className="storage-usage-segment" style={{width:`${denominator?Math.max(0,account.used)/denominator*100:0}%`,background:account.color} as CSSProperties} title={`${account.name}: ${account.used.toFixed(1)} GB used`} aria-hidden="true"/>)}</div>;
+}

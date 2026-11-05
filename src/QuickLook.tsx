@@ -1,0 +1,11 @@
+import {invoke} from './ipc';
+import { useState } from 'react';
+import { ExternalLink, ArrowDownToLine, X } from 'lucide-react';
+import type { DriveFile } from './data';
+import { FilePreview, FileInformation, type PreviewStatus } from './FileInspector';
+export default function QuickLook({ file, files, onClose }: { file:DriveFile; files:DriveFile[]; onClose:()=>void }) {
+  const [status,setStatus] = useState<PreviewStatus>(file.url ? 'loading' : 'unavailable');
+  const [openError,setOpenError]=useState('');
+  const [showFallback,setShowFallback] = useState(false);
+  return <div className="modal-overlay" onClick={onClose}><section className="modal quick-look-modal preview-only-modal" role="dialog" aria-modal="true" aria-labelledby="quick-look-title" onClick={event=>event.stopPropagation()}><header className="quick-look-heading"><div><span className="eyebrow">QUICK LOOK</span><h2 id="quick-look-title">{file.name}</h2>{file.previewOffline&&<p className="offline-preview-status">{file.previewStale?"Saved offline copy · may be older than the Drive version":"Using saved offline copy"}</p>}</div><div>{file.remote && <button className="secondary-button open-drive-preview" onClick={()=>{setOpenError('');void invoke('drive_open',{id:file.id}).catch(reason=>setOpenError(String(reason)));}}><ExternalLink size={15}/>Open in Drive</button>}{file.url && <a className="icon-button" aria-label={`Download ${file.name}`} title="Download" href={file.url} download={file.name}><ArrowDownToLine size={18}/></a>}<button className="icon-button" aria-label="Close Quick Look" onClick={onClose}><X size={20}/></button></div></header>{openError && <p className="preview-caption" role="alert">{openError}</p>}<div className="quick-look-content"><FilePreview file={file} onStatus={setStatus}/></div>{(status==='unavailable' || showFallback) && <div className="quick-look-fallback"><h3>No preview available</h3><p>File information is shown below.</p><FileInformation file={file} files={files}/></div>}{status==='ready' && file.name.toLowerCase().endsWith('.pdf') && !showFallback && <button className="text-button pdf-fallback-button" onClick={()=>setShowFallback(true)}>Preview not displaying? Show file information</button>}</section></div>;
+}

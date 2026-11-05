@@ -1,0 +1,10 @@
+import {useEffect,useState} from 'react';
+import {invoke,isTauri} from '@tauri-apps/api/core';
+type Preferences={launch:boolean;minimized:boolean;restore:boolean;tray:boolean;development?:boolean;trayReady?:boolean};
+export default function StartupSettings(){
+ const [prefs,setPrefs]=useState<Preferences|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
+ useEffect(()=>{if(!isTauri()){setError('Startup settings require the desktop app.');return;}void invoke<Preferences>('startup_settings',{value:null}).then(setPrefs).catch(reason=>setError(String(reason)));},[]);
+ async function change(key:keyof Preferences){if(!prefs)return;setBusy(true);setError('');try{setPrefs(await invoke<Preferences>('startup_settings',{value:{launch:prefs.launch,minimized:prefs.minimized,restore:prefs.restore,tray:prefs.tray,[key]:!prefs[key]}}));}catch(reason){setError(String(reason));}finally{setBusy(false);}}
+ const rows=[['launch','Launch at login','Open Cirro automatically when you sign in to Windows.'],['minimized','Start minimized','Start Cirro in the system tray.'],['restore','Restore the last location','Return to your last account, page and folder.'],['tray','Keep running in the tray','Minimize or close the window to the tray while sync, transfers, and notifications continue.']] as const;
+ return <div>{rows.map(([key,title,description])=><div className="preference-row" key={key}><div><h3>{title}</h3><p>{description}</p></div><button className="toggle" role="switch" aria-label={title} aria-checked={prefs?.[key]||false} disabled={!prefs||busy||(key==='launch'&&prefs.development)} onClick={()=>void change(key)}><span/></button></div>)}{error&&<p className="flow-error" role="alert">{error}</p>}<p className="settings-note">{prefs?.development?'Launch at login is unavailable in development builds. ':'Windows Startup settings can also disable launch at login. '}Use Open Cirro in the tray to return, or Quit Cirro to stop the app and synchronization.</p>{prefs?.trayReady===false&&<p className="flow-error" role="status">The tray is unavailable. Cirro will keep the window accessible and close normally.</p>}</div>;
+}

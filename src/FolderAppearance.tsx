@@ -1,0 +1,7 @@
+import { folderStyles, folderColors, type FolderStyle } from './folderStyles';
+import FileGlyph from './fileTypes';
+import type { DriveFile } from './data';
+export default function FolderAppearance({ name, color, style, onColor, onStyle }: { name:string; color:string; style:FolderStyle; onColor:(color:string)=>void; onStyle:(style:FolderStyle)=>void }) {
+  const example: DriveFile = { id:'folder-preview', name:name.trim() || 'New folder', type:'folder', account:'personal', color, folderStyle:style, size:'0 B', modified:'Just now' };
+  return <section className="folder-appearance"><div className="folder-live-preview"><FileGlyph file={example} large/><span><strong>{example.name}</strong><small>{folderStyles.find(item=>item.id===style)?.label} · {folderColors.find(item=>item.id===color)?.label}</small></span></div><fieldset><legend>Color</legend><div className="folder-color-options">{folderColors.map(item=><button type="button" key={item.id} className={`folder-color ${item.id}`} aria-label={`${item.label} folder color`} aria-pressed={color===item.id} title={item.label} onClick={()=>onColor(item.id)}><span/>{color===item.id && <span className="color-selected"/>}</button>)}</div></fieldset><fieldset><legend>Folder type</legend><div className="folder-style-options">{folderStyles.map(item=><button type="button" key={item.id} aria-pressed={style===item.id} onClick={()=>onStyle(item.id)}><item.icon size={18}/><span>{item.label}</span></button>)}</div></fieldset></section>;
+}

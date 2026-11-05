@@ -1,0 +1,14 @@
+import AccountDropdown from './AccountDropdown';
+import {useAuth} from './auth';
+import {useEffect,useState} from 'react';
+import {invoke} from './ipc';
+import {FolderOpen} from 'lucide-react';
+export default function LocalSettings({kind}:{kind:'account'|'offline'}){
+ const {users,user}=useAuth();const [account,setAccount]=useState(user?.id||'');
+ const [value,setValue]=useState('');const [message,setMessage]=useState('');const [busy,setBusy]=useState(false);
+ useEffect(()=>{let active=true;setValue('');setMessage('');void(kind==='offline'?invoke<string>('offline_directory',{path:null,accountId:account}):invoke<string|null>('drive_preference',{key:'accountLabel',accountId:account})).then(value=>{if(active)setValue(value||'');}).catch(error=>{if(active)setMessage(String(error));});return()=>{active=false;};},[kind,account]);
+ useEffect(()=>{if(users.length&&!users.some(user=>user.id===account))setAccount(users[0].id);},[users,account]);
+ async function save(){setBusy(true);setMessage('');try{if(kind==='offline')setValue(await invoke<string>('offline_directory',{path:value,accountId:account}));else{await invoke('drive_setting',{key:'accountLabel',value:value.trim().slice(0,40),accountId:account});window.dispatchEvent(new Event('cirro-account-label'));}setMessage('Saved');}catch(error){setMessage(String(error));}finally{setBusy(false);}}
+ async function browse(){setBusy(true);setMessage('');try{const selected=await invoke<string|null>('pick_offline_folder',{current:value||null,accountId:account});if(selected){setValue(selected);setMessage('Folder selected. Save to use this location.');}}catch(error){setMessage(String(error));}finally{setBusy(false);}}
+ return <form className="local-settings-form" onSubmit={event=>{event.preventDefault();void save();}}><span className="field-label">Account</span><AccountDropdown value={account} disabled={busy} onChange={setAccount}/><label className="field-label" htmlFor="local-settings-path">{kind==='offline'?'Offline files folder':'Account label'}</label><div className="offline-folder-field"><input id="local-settings-path" aria-label={kind==='offline'?'Offline files folder':'Account label'} disabled={busy} value={value} maxLength={kind==='account'?40:undefined} onChange={event=>setValue(event.target.value)}/>{kind==='offline'&&<button type="button" className="secondary-button" disabled={busy} onClick={()=>void browse()}><FolderOpen size={16}/>Browse…</button>}</div><p>{kind==='offline'?'New offline downloads are saved here. Existing copies stay in their original folder.':'Choose a label such as Personal or Work. Leave empty to use your Google profile name.'}</p><button className="secondary-button" disabled={busy||(kind==='offline'&&!value.trim())}>{busy?'Please wait…':'Save'}</button><span role="status">{message}</span></form>;
+}

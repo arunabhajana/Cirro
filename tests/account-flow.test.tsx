@@ -1,0 +1,7 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+import AccountFlow from '../src/AccountFlow';
+afterEach(cleanup);
+it('allows cancelling browser sign-in',()=>{const cancel=vi.fn();render(<AccountFlow flow={{stage:'signing-in',retry:'signin'}} onCancel={cancel} onRetry={vi.fn()} onClose={vi.fn()}/>);fireEvent.click(screen.getByText('Cancel sign-in'));expect(cancel).toHaveBeenCalledOnce();});
+it('keeps failed setup recoverable with retry and close',()=>{const retry=vi.fn(),close=vi.fn();render(<AccountFlow flow={{stage:'error',retry:'load',error:'Connection unavailable'}} onCancel={vi.fn()} onRetry={retry} onClose={close}/>);expect(screen.getByText('Connection unavailable')).toBeTruthy();fireEvent.click(screen.getByRole('button',{name:'Try again'}));fireEvent.click(screen.getByRole('button',{name:'Close',exact:true}));expect(retry).toHaveBeenCalledOnce();expect(close).toHaveBeenCalledOnce();});
+it('does not invent a percentage and lets loading continue in the background',()=>{const close=vi.fn();render(<AccountFlow flow={{stage:'loading',retry:'load',name:'arun@gmail.com'}} onCancel={vi.fn()} onRetry={vi.fn()} onClose={close}/>);expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'Continue in background',exact:true}));expect(close).toHaveBeenCalledOnce();});

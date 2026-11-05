@@ -1,0 +1,2 @@
+import parser from '@typescript-eslint/parser';
+export default [{ignores:['node_modules/**','dist/**','src-tauri/**','.qa/**']},{files:['src/**/*.ts','src/**/*.tsx'],languageOptions:{parser,parserOptions:{ecmaVersion:'latest',sourceType:'module',ecmaFeatures:{jsx:true}}},rules:{'no-debugger':'error','no-constant-condition':['error',{checkLoops:false}],'no-duplicate-case':'error','no-unreachable':'error','constructor-super':'error','valid-typeof':'error'}}];

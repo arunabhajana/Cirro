@@ -1,0 +1,16 @@
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen} from '@testing-library/react';
+const call=vi.hoisted(()=>vi.fn());
+vi.mock('../src/ipc',()=>({invoke:call}));
+vi.mock('../src/auth',()=>({useAuth:()=>({users:[{id:'one',name:'Personal',email:'one@gmail.com'},{id:'two',name:'Work',email:'two@gmail.com'}]}),AccountAvatar:()=> <span/>}));
+import AccountDropdown from '../src/AccountDropdown';
+import {remoteContent} from '../src/driveContent';
+import type {DriveFile} from '../src/data';
+const file:DriveFile={id:'one::file',account:'one',name:'Report.pdf',type:'pdf',color:'blue',size:'1 KB',modified:'2026-10-30',remote:true,offline:true};
+const original=URL.createObjectURL;
+beforeEach(()=>{call.mockReset();Object.defineProperty(URL,'createObjectURL',{configurable:true,value:vi.fn(()=> 'blob:offline-preview')});vi.spyOn(navigator,'onLine','get').mockReturnValue(true);});
+afterEach(()=>{cleanup();vi.restoreAllMocks();Object.defineProperty(URL,'createObjectURL',{configurable:true,value:original});});
+it('custom account dropdown supports keyboard selection without native select',()=>{const change=vi.fn();render(<AccountDropdown value="one" onChange={change}/>);const trigger=screen.getByRole('combobox');fireEvent.keyDown(trigger,{key:'ArrowDown'});expect(screen.getAllByRole('option')).toHaveLength(2);fireEvent.keyDown(trigger,{key:'ArrowDown'});fireEvent.keyDown(trigger,{key:'Enter'});expect(change).toHaveBeenCalledWith('two');expect(screen.queryByRole('listbox')).toBeNull();});
+it('custom dropdown Escape preserves the current account',()=>{const change=vi.fn();render(<AccountDropdown value="one" onChange={change}/>);const trigger=screen.getByRole('combobox');fireEvent.click(trigger);fireEvent.keyDown(trigger,{key:'Escape'});expect(change).not.toHaveBeenCalled();expect(screen.queryByRole('listbox')).toBeNull();});
+it('offline previews read the saved file without trying Drive first',async()=>{vi.spyOn(navigator,'onLine','get').mockReturnValue(false);call.mockResolvedValue({data:btoa('pdf'),mime:'application/pdf',offline:true});const content=await remoteContent(file);expect(content.offline).toBe(true);expect(call.mock.calls.map(args=>args[0])).toEqual(['offline_content']);});
+it('a failed Drive fetch falls back to the saved copy with its stale indicator',async()=>{call.mockRejectedValueOnce('Network unavailable').mockResolvedValueOnce({data:btoa('pdf'),mime:'application/pdf',offline:true,stale:true});const content=await remoteContent(file);expect(content.stale).toBe(true);expect(call.mock.calls.map(args=>args[0])).toEqual(['drive_content','offline_content']);});

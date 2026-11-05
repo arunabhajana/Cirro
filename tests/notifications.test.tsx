@@ -1,0 +1,11 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+const native=vi.hoisted(()=>vi.fn());
+vi.mock('@tauri-apps/api/core',()=>({isTauri:()=>true,invoke:native}));
+vi.mock('../src/drive',()=>({driveState:{error:''}}));
+vi.mock('../src/devicePreferences',async()=>{const React=await import('react');return {useDevicePreference:(_key:string,value:unknown)=>React.useState(value)};});
+import NotificationSettings from '../src/NotificationSettings';
+afterEach(()=>{cleanup();native.mockReset();});
+it('shows working switches for all notification preferences',()=>{render(<NotificationSettings/>);for(const title of ['Desktop notifications','Upload complete','Transfer errors','Storage warnings','Do not disturb','Notification sound'])expect(screen.getByRole('switch',{name:title})).toBeTruthy();const dnd=screen.getByRole('switch',{name:'Do not disturb'});fireEvent.click(dnd);expect(dnd.getAttribute('aria-checked')).toBe('true');});
+it('explains development suppression instead of claiming a Windows notification was sent',async()=>{native.mockResolvedValue('development');render(<NotificationSettings/>);fireEvent.click(screen.getByRole('button',{name:'Send test'}));await waitFor(()=>expect(screen.getByRole('status').textContent).toContain('native desktop notifications are disabled'));});
+it('surfaces native permission failures in the test control',async()=>{native.mockRejectedValue('Windows has disabled Cirro notifications.');render(<NotificationSettings/>);fireEvent.click(screen.getByRole('button',{name:'Send test'}));await waitFor(()=>expect(screen.getByRole('status').textContent).toContain('Windows has disabled'));});
