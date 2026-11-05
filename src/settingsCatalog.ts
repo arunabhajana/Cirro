@@ -19,7 +19,10 @@ export const settingEntries:SettingEntry[]=[
  ...entries('general',[
  ['Home layout','Choose pinned items and dashboard widgets.','customize arrange folders widgets unified personal'],
  ['Sidebar','Show, hide and arrange navigation and pinned items.','customize transfers density compact width']]),
- ...entries('appearance',[['Theme','Use Light, Dark or your system appearance.','colour color display automatic mode','Theme']]),
+ ...entries('appearance',[['Theme','Use Light, Dark or your system appearance.','colour color display automatic mode','Theme'],
+ ['Accent colour','Choose a highlight colour for Cirro.','color blue violet teal rose amber'],
+ ['Motion','Follow your system or reduce interface animations.','animations movement accessibility reduced'],
+ ['Reduce transparency','Use solid backgrounds for menus and dialogs.','blur glass accessibility opacity']]),
  ...entries('accounts',[
  ['Connected Google accounts','Connect another account or sign out.','add remove disconnect login email'],
  ['Account labels','Name your accounts throughout Cirro.','personal work rename tags','Connected Google accounts'],
@@ -63,6 +66,7 @@ export const settingEntries:SettingEntry[]=[
  ['Run diagnostics','Check the database and sync engine.','health integrity sqlite status','Check Cirro on this device'],
  ['Diagnostic report','Review, copy or save a private diagnostic report.','export json help support','Check Cirro on this device'],
  ['App data folder','Open Cirro’s local application data folder.','explorer database location'],
+ ['Request test account access','Request access for a Google account through email.','testing oauth google email invitation add approval'],
  ['Troubleshooting','Find help with sharing, transfers and offline files.','error connection conflict recovery']]),
  ...entries('about',[
  ['Cirro version','See the installed version of Cirro.','build installed','Cirro'],

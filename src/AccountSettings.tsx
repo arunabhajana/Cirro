@@ -1,3 +1,4 @@
+import {MAX_ACCOUNTS} from './accountLimits';
 import {accountColors,validAccountColor} from './accountColors';
 import type {GoogleUser} from './auth';
 import ProgressBar from './ProgressBar';
@@ -33,4 +34,4 @@ function AccountCard({user}:{user:GoogleUser}){
  </article>;
 }
 
-export default function AccountSettings(){const {users,signIn,phase}=useAuth();return <><div className="preference-row"><div><h3>Connected Google accounts</h3><p>Edit labels, colours, and connections for each account.</p></div><button className="secondary-button" disabled={phase!=="ready"} onClick={()=>void signIn()}>Add account</button></div><div className="connection-list">{users.map(user=><AccountCard key={user.id} user={user}/>)}</div></>;}
+export default function AccountSettings(){const {users,signIn,phase}=useAuth();return <><div className="preference-row"><div><h3>Connected Google accounts</h3><p>{users.length} of {MAX_ACCOUNTS} accounts connected.</p></div><button className="secondary-button" disabled={phase!=="ready"||users.length>=MAX_ACCOUNTS} onClick={()=>void signIn()}>{users.length>=MAX_ACCOUNTS?'Account limit reached':'Add account'}</button></div><div className="connection-list">{users.map(user=><AccountCard key={user.id} user={user}/>)}</div></>;}

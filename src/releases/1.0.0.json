@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "title": "One workspace. All your drives.",
+  "summary": "The first release of Cirro brings your Google Drive accounts into one desktop workspace, with a personal Home, offline access and folder sync built for Windows.",
+  "groups": [
+    {
+      "title": "Added",
+      "items": [
+        {"title": "Up to five Google accounts", "description": "Sign in with Google and switch between individual accounts and All accounts. Search across connected drives, give accounts labels and colours, and see their combined storage usage."},
+        {"title": "A personal Home for every view", "description": "Keep a separate Home layout for each account and Unified view. Pin files and folders, choose widgets, and arrange storage, file composition, recent files, activity and sync information."},
+        {"title": "A familiar file manager", "description": "Browse My Drive, Shared with me, Starred, Recent, Trash and Storage. Use breadcrumbs, back, forward and up navigation, list or grid views, sorting, pagination and checkbox selection for bulk actions."},
+        {"title": "Search and sidebar shortcuts", "description": "Search file names, account labels and folder paths, including quoted phrases and type:, account: and in: filters. Pin shortcuts to the sidebar and customize navigation order, visibility, spacing and width."},
+        {"title": "Quick Look and file details", "description": "Single-click to inspect details, double-click to open, or press Space for a separate preview. View supported images, PDFs, audio, video, text, code, archive listings and document formats. Open in Drive is available when you need the web viewer."},
+        {"title": "File and folder actions", "description": "Upload files or entire folder trees, create folders with a chosen colour and icon, rename, star, move, copy, trash and restore. Destination pickers support folders within an account and transfers between connected accounts, subject to Google permissions."},
+        {"title": "Sharing controls", "description": "Review people with access, manage supported viewer and editor permissions, and create viewer links where Google allows it. Owner and inherited permissions remain protected."},
+        {"title": "Offline files and folders", "description": "Save individual files or whole folders to a location you choose for each account. Open saved copies and use them for previews, review missing or outdated downloads, and remove offline copies separately from Drive files."},
+        {"title": "Cirro Flow folder sync", "description": "Connect a local folder to a destination under My Drive / Cirro. Sync changes in both directions while Cirro runs, pause or resume a folder, review recovery copies, and keep both versions when conflicts occur."},
+        {"title": "Cirro Cloud preview", "description": "Create a Windows File Explorer cloud view with placeholders and download-on-demand. Choose its account and folder, review the preview warning, and remove the view when you no longer need it."},
+        {"title": "Persistent transfer management", "description": "Follow upload, download, move and copy progress. Pause, cancel and retry supported transfers, with queued work saved on this device for recovery after a connection loss or restart. Enable Transfers in sidebar customization when you want a permanent shortcut."},
+        {"title": "Windows desktop integration", "description": "Choose launch at login, start minimized, restore the last location and keep running in the tray. Receive Cirro-branded upload, transfer-error and storage notifications with relevant actions, plus controls for sound and Do not disturb."},
+        {"title": "Appearance and first-run guide", "description": "Choose Light, Dark or System appearance, five accent colours, reduced motion and reduced transparency. The first-run guide uses optional practice examples, so it works before you connect an account or add files."},
+        {"title": "Local storage and support", "description": "See a horizontal breakdown of database, offline, upload-staging and recovery storage. Clear cached thumbnails or finished transfers, reclaim database space, rebuild metadata, run local diagnostics and request Google test-account access."}
+      ]
+    },
+    {
+      "title": "Improved",
+      "items": [
+        {"title": "Faster browsing with local metadata", "description": "Account-scoped SQLite caching stores file metadata, folder structure, thumbnails and preferences. File content is fetched when requested, explicitly saved offline or staged for a transfer."},
+        {"title": "Clearer progress and storage", "description": "Themed progress bars and bottom-right operation indicators keep background work visible. Cloud storage uses account-coloured segments; local storage separates Cirro data from available disk space."},
+        {"title": "Settings built around clear tasks", "description": "Grouped panels, custom dropdowns and expandable sections, searchable controls, keyboard navigation and consistent spacing make preferences easier to find and change."}
+      ]
+    },
+    {
+      "title": "Fixed",
+      "items": [
+        {"title": "Drive views and permissions", "description": "My Drive browsing follows folder structure instead of flattening every descendant into the root. Sharing listings recover from expired page tokens, and file actions respect the owning account and Google permissions."},
+        {"title": "Preview and selection feedback", "description": "Unavailable previews and size limits appear inside Quick Look. Inspecting an item stays separate from checkbox selection, and previews offer a route back to Google Drive."},
+        {"title": "Window layout and readable values", "description": "Window sizing respects the Windows work area. Storage figures, percentages and modified dates use readable formatting, with themed controls throughout the interface."}
+      ]
+    },
+    {
+      "title": "Security & privacy",
+      "items": [
+        {"title": "Windows Hello app lock", "description": "Require Windows Hello to open or return to Cirro, choose an inactivity timeout, and lock immediately. App lock gates access through Cirro; it does not encrypt offline files or prevent access through File Explorer."},
+        {"title": "Account credentials and history", "description": "Saved Google sessions use the operating system credential store. Choose whether Cirro remembers recently opened files and sign out individual accounts in Settings."},
+        {"title": "Private diagnostics", "description": "Diagnostic reports exclude account identities, file names, local paths, tokens and file contents. Review, copy or save a report yourself; nothing is sent automatically."},
+        {"title": "Verified application updates", "description": "Cirro checks for updates at launch and hourly while running. Update downloads are signature-verified, show progress without interrupting your work, and wait for your restart choice."}
+      ]
+    },
+    {
+      "title": "Limitations",
+      "items": [
+        {"title": "Windows and Google access", "description": "This release targets Windows. Google ownership, sharing permissions and storage limits still apply. While Cirro’s OAuth app is in testing, accounts must be approved before connecting."},
+        {"title": "Offline and sync requirements", "description": "Cirro must be running for background transfers and sync. Google editor documents and shortcuts remain online or use supported exports and links; local changes to an ordinary offline copy do not upload automatically. Use Flow for two-way folder sync."},
+        {"title": "Cloud views are a preview", "description": "Cirro Cloud provides read-only snapshot views, not a writable virtual drive. Review its warning before enabling it. Flow does not support links, junctions or other providers’ cloud placeholders."},
+        {"title": "Transfers and recovery", "description": "An interrupted individual file may restart from the beginning. Cross-account copies of Google-native documents require destination-account access. Cancelling a transfer keeps files already copied, and recovery copies require review rather than automatic deletion."}
+      ]
+    }
+  ]
+}

@@ -1,4 +1,7 @@
 use tauri::{Manager, Window};
+fn allowed(prefs: &serde_json::Value, category: &str) -> bool {
+    prefs["dnd"] != true && prefs["enabled"] != false && prefs[category] != false
+}
 fn escape(text: &str) -> String {
     text.chars()
         .filter(|c| !c.is_control() || *c == '\n')
@@ -21,6 +24,20 @@ mod tests {
         );
         assert!(!escape("file\0name").contains('\0'));
         assert!(escape(&"x".repeat(900)).len() <= 400);
+    }
+    #[test]
+    fn notification_preferences_gate_every_category() {
+        use serde_json::json;
+        for category in ["uploads", "errors", "storage", "test"] {
+            assert!(allowed(&json!(null), category));
+            assert!(!allowed(&json!({"enabled": false}), category));
+            assert!(!allowed(&json!({"dnd": true}), category));
+        }
+        assert!(!allowed(&json!({"uploads": false}), "uploads"));
+        assert!(!allowed(&json!({"errors": false}), "errors"));
+        assert!(!allowed(&json!({"storage": false}), "storage"));
+        assert!(allowed(&json!({"uploads": false}), "test"));
+        assert!(allowed(&json!({"sound": false}), "errors"));
     }
 }
 #[tauri::command]
@@ -45,7 +62,7 @@ pub async fn desktop_notification(
         None,
         None,
     )?;
-    if prefs["dnd"] == true || prefs["enabled"] == false || prefs[&category] == false {
+    if !allowed(&prefs, &category) {
         return Ok("muted".into());
     }
     // Debug builds never register or send under the installed application's identity.

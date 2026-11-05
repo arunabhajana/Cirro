@@ -18,3 +18,15 @@
 .login-copy .google-button:disabled{opacity:.65;cursor:default}.login-copy .login-assurance{max-width:400px;line-height:1.65;align-items:flex-start}
 .sample-data-note{font-size:12px;color:var(--text-secondary);line-height:1.7;margin:12px 0 0}
 @media(prefers-reduced-motion:reduce){.auth-spinner{animation:none}}
+.login-test-access{width:100%;max-width:410px;margin-top:22px;border:1px solid var(--line);border-radius:12px;background:var(--surface-subtle);overflow:hidden}
+.login-copy .login-test-access .preference-row{padding:16px;gap:16px;border:0;align-items:center}
+.login-test-access .preference-row>div{min-width:0;flex:1}
+.login-copy .login-test-access h3{font-size:12px;font-weight:600;line-height:1.6}
+.login-copy .login-test-access p{font-size:11px;line-height:1.7;margin-top:4px;color:var(--text-secondary)}
+.login-test-access .secondary-button{flex-shrink:0;min-height:33px;border-radius:8px;font-size:11px}
+.login-test-access .test-access-request form{padding:0 16px 17px;gap:10px}
+.login-test-access .test-access-request form>label{font-weight:500;font-size:11px}
+.login-test-access .test-access-request form>p{margin:0;overflow-wrap:anywhere}
+.login-test-access .settings-inline-status{margin:0 16px 16px;font-size:11px}
+.login-test-access :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:480px){.login-copy .login-test-access .preference-row{flex-wrap:wrap}.login-test-access .preference-row>div{flex-basis:100%}}

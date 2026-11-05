@@ -3,6 +3,7 @@ import {useEffect,useRef,useState,type SetStateAction} from 'react';
 export function upgradeDevicePreference<T>(key:string,value:T):T {if(key==='device:sidebar'&&value&&typeof value==='object'&&!('transfersConfigured' in value)){const sidebar=value as {hidden?:string[]};return {...value,hidden:[...new Set([...(sidebar.hidden||[]),'Transfers'])],transfersConfigured:true} as T;}return value;}
 const cache=new Map<string,unknown>();
 const writes=new Map<string,Promise<unknown>>();
+export async function waitForDevicePreference(key:string){await writes.get(key);}
 function persist(key:string,value:unknown){const pending=(writes.get(key)||Promise.resolve()).catch(()=>{}).then(()=>invoke('device_setting',{key,value}));writes.set(key,pending);void pending.catch(error=>window.dispatchEvent(new CustomEvent('cirro-account-error',{detail:`Could not save device preferences: ${String(error)}`})));}
 export function useDevicePreference<T>(key:string,fallback:T,migrateKey?:string,migrateAccount?:string){
  const fallbackRef=useRef(fallback);fallbackRef.current=fallback;

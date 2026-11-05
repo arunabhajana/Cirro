@@ -4,6 +4,7 @@ mod cloud_files;
 mod desktop;
 mod device_preferences;
 mod drive;
+mod experience;
 mod file_tools;
 mod flow;
 mod folder_picker;
@@ -35,6 +36,9 @@ fn main() {
             security::start(app).map_err(std::io::Error::other)?;
             startup::prepare(app)?;
             desktop::prepare(app)?;
+            if let Some(window) = tauri::Manager::get_webview_window(app, "main") {
+                let _ = experience::bootstrap(&window.as_ref().window());
+            }
             flow::start(app);
             transfers::start(app);
             cloud_files::start(app);
@@ -51,6 +55,7 @@ fn main() {
             let handler: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool = tauri::generate_handler![
                 security::security_command,
                 updates::update_command,
+                experience::experience_command,
                 storage_policy::storage_settings,
                 storage_policy::storage_download,
                 auth::auth_status,

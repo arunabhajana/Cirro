@@ -4,6 +4,17 @@ const call=vi.hoisted(()=>vi.fn());vi.mock('../src/ipc',()=>({invoke:call}));
 import LocalStorageSettings from '../src/LocalStorageSettings';import SupportSettings from '../src/SupportSettings';import {upgradeDevicePreference} from '../src/devicePreferences';import {defaultSidebar} from '../src/workspace';
 const category={bytes:1000,files:1,skipped:0};const usage={database:category,offline:category,staging:category,recovery:category,thumbnailBytes:200,thumbnailCount:2,metadataCount:10,offlineRoots:1,freeBytes:1e9};
 afterEach(()=>{cleanup();call.mockReset();});
+it('shows local storage composition without including free disk space or counting thumbnails twice',async()=>{
+ call.mockResolvedValue({...usage,database:{...category,bytes:1000},offline:{...category,bytes:3000},staging:{...category,bytes:0},recovery:{...category,bytes:0}});
+ render(<LocalStorageSettings/>);
+ const breakdown=await screen.findByRole('img',{name:/Database: 1 KB, Offline files: 3 KB/});
+ const segments=breakdown.querySelectorAll('span');expect(segments[0].style.width).toBe('25%');expect(segments[1].style.width).toBe('75%');expect(segments[2].style.width).toBe('0%');
+ const summary=screen.getByRole('region',{name:'Storage on this computer'});expect(within(summary).getByText('4 KB')).toBeTruthy();expect(within(summary).getByText('10')).toBeTruthy();
+});
+it('shows an empty storage bar without invalid widths when no local data exists',async()=>{
+ const empty={bytes:0,files:0,skipped:0};call.mockResolvedValue({...usage,database:empty,offline:empty,staging:empty,recovery:empty,freeBytes:null,metadataCount:0});
+ render(<LocalStorageSettings/>);const bar=await screen.findByRole('img',{name:'No local storage used'});expect(Array.from(bar.querySelectorAll('span')).every(item=>item.style.width==='0%')).toBe(true);
+});
 it('hides Transfers once for existing preferences and preserves a subsequent opt-in',()=>{expect(defaultSidebar.hidden).toContain('Transfers');const migrated=upgradeDevicePreference('device:sidebar',{hidden:['Trash'],order:['Home','Transfers']});expect(migrated.hidden).toEqual(['Trash','Transfers']);const enabled={...migrated,hidden:['Trash']};expect(upgradeDevicePreference('device:sidebar',enabled).hidden).toEqual(['Trash']);});
 it('does not clear local data until the user confirms',async()=>{call.mockResolvedValue(usage);render(<LocalStorageSettings/>);const button=await screen.findByRole('button',{name:'Clear thumbnails'});await waitFor(()=>expect((button as HTMLButtonElement).disabled).toBe(false));fireEvent.click(button);expect(call.mock.calls.filter(args=>args[1].action==='clear-thumbnails')).toHaveLength(0);const dialog=screen.getByRole('dialog');expect(within(dialog).getByText(/Offline files and recovery copies are kept/)).toBeTruthy();fireEvent.click(within(dialog).getByRole('button',{name:'Clear thumbnails'}));await waitFor(()=>expect(call).toHaveBeenCalledWith('maintenance_command',{action:'clear-thumbnails',args:{}}));});
 it('shows maintenance lock errors without pretending cleanup succeeded',async()=>{call.mockImplementation((_command,args)=>args.action==='usage'?Promise.resolve(usage):Promise.reject('Pause transfers and wait for them to stop'));render(<LocalStorageSettings/>);fireEvent.click(await screen.findByRole('button',{name:'Clean up'}));fireEvent.click(within(screen.getByRole('dialog')).getByRole('button',{name:'Clear finished transfers'}));await screen.findByText('Pause transfers and wait for them to stop');expect(screen.queryByText('Local storage updated.')).toBeNull();});

@@ -1,6 +1,19 @@
 use serde_json::{json, Value};
 use tauri::{Emitter, Manager, Window};
 use tauri_plugin_updater::{Update, UpdaterExt};
+#[cfg(test)]
+mod config_tests {
+    #[test]
+    fn checked_in_updater_config_initializes_without_release_secrets() {
+        let app: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        let config: tauri_plugin_updater::Config =
+            serde_json::from_value(app["plugins"]["updater"].clone())
+                .expect("Updater configuration must deserialize before release keys are injected");
+        assert!(!config.dangerous_insecure_transport_protocol);
+        assert!(!config.dangerous_accept_invalid_certs);
+    }
+}
 #[derive(Default)]
 pub struct UpdateState {
     gate: tokio::sync::Mutex<()>,

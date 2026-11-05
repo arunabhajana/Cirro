@@ -43,6 +43,7 @@ jobs:
           if ($LASTEXITCODE -eq 0 -and !(($existing | ConvertFrom-Json).isDraft)) { throw 'This version is already published. Use a new version tag.' }
           $global:LASTEXITCODE = 0
       - name: Prepare version and validate release configuration
+        id: release
         run: node scripts/prepare-release.mjs
       - run: npm ci
       - name: Fetch pinned Flow engine if absent
@@ -71,8 +72,8 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Cirro ${{ github.ref_name }}
-          releaseBody: 'Download the Windows installer below. Existing installations can update from Cirro.'
-          generateReleaseNotes: true
+          releaseBody: ${{ steps.release.outputs.notes }}
+          generateReleaseNotes: false
           releaseDraft: true
           prerelease: false
           uploadUpdaterJson: true

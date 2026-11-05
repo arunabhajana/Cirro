@@ -374,6 +374,7 @@ pub async fn auth_sign_in(window: Window, state: State<'_, AuthState>) -> Result
             let saved = SavedSession { client_id: CLIENT_ID.into(), refresh_token: refresh.secret().into(), profile: profile.clone() };
             let mut session = state.session.lock().await;
             if state.generation.load(Ordering::SeqCst) != generation { return Err(CANCELLED.into()); }
+            ensure_account_slot(&profiles()?,&profile.id)?;
             credential()?.set_password(&serde_json::to_string(&saved).map_err(|_| "Could not save your account.")?)
                 .map_err(|_| "Could not save your session in the system credential store. No account was connected.".to_string())?;
             remember(&saved)?;
@@ -704,8 +705,15 @@ fn saved_account(id: &str) -> Result<SavedSession, String> {
     }
     Ok(saved)
 }
+fn ensure_account_slot(list: &[Profile], id: &str) -> Result<(), String> {
+    if list.len() >= 5 && !list.iter().any(|profile| profile.id == id) {
+        return Err("Cirro supports up to 5 connected Google accounts. Disconnect an account before adding another.".into());
+    }
+    Ok(())
+}
 fn remember(saved: &SavedSession) -> Result<(), String> {
     let mut list = profiles()?;
+    ensure_account_slot(&list, &saved.profile.id)?;
     list.retain(|p| p.id != saved.profile.id);
     list.push(saved.profile.clone());
     keyring::Entry::new(STORE, &format!("account-{}", saved.profile.id))
@@ -782,4 +790,23 @@ pub(crate) fn flow_credentials(id: &str) -> Result<(String, String, String), Str
     crate::security::require_unlocked()?;
     let saved = saved_account(id)?;
     Ok((CLIENT_ID.into(),CLIENT_SECRET.into(),serde_json::json!({"access_token":"refresh-required","refresh_token":saved.refresh_token,"token_type":"Bearer","expiry":"2000-01-01T00:00:00Z"}).to_string()))
+}
+
+#[cfg(test)]
+mod account_limit_tests {
+    use super::*;
+    #[test]
+    fn sixth_account_is_rejected_but_existing_accounts_can_reconnect() {
+        let profiles = (0..5)
+            .map(|id| Profile {
+                id: id.to_string(),
+                name: String::new(),
+                email: String::new(),
+                picture: None,
+            })
+            .collect::<Vec<_>>();
+        assert!(ensure_account_slot(&profiles, "sixth").is_err());
+        assert!(ensure_account_slot(&profiles, "2").is_ok());
+        assert!(ensure_account_slot(&profiles[..4], "sixth").is_ok());
+    }
 }

@@ -218,6 +218,24 @@ fn clear_metadata(c: &mut rusqlite::Connection) -> Result<(), String> {
     .map_err(|e| e.to_string())?;
     tx.commit().map_err(|e| e.to_string())
 }
+fn test_access_mail(email: &str) -> Result<String, String> {
+    let email = email.trim();
+    let parts = email.split('@').collect::<Vec<_>>();
+    if email.len() > 254
+        || parts.len() != 2
+        || parts[0].is_empty()
+        || !parts[1].contains('.')
+        || parts[1].starts_with('.')
+        || parts[1].ends_with('.')
+        || email
+            .chars()
+            .any(|c| c.is_whitespace() || c.is_control() || "<>\"".contains(c))
+    {
+        return Err("Enter a valid Google account email address.".into());
+    }
+    let query=url::form_urlencoded::Serializer::new(String::new()).append_pair("subject","Cirro: request to add a Google test account").append_pair("body",&format!("Hello,\n\nPlease add this Google account to Cirro's OAuth test-user list:\n\n{email}\n\nThank you.")).finish().replace('+',"%20");
+    Ok(format!("mailto:arunabhajana@gmail.com?{query}"))
+}
 #[tauri::command]
 pub async fn maintenance_command(
     window: Window,
@@ -228,6 +246,11 @@ pub async fn maintenance_command(
         return Err("Main window required".into());
     }
     crate::security::require_unlocked()?;
+    if action == "request-test-access" {
+        let mail = test_access_mail(args["email"].as_str().unwrap_or(""))?;
+        open::that(mail).map_err(|_|"Could not open an email app. Send your Google account email to arunabhajana@gmail.com and request Cirro test access.")?;
+        return Ok(Value::Null);
+    }
     if action == "usage" || action == "diagnostics" {
         return tauri::async_runtime::spawn_blocking(move || {
             crate::security::require_unlocked()?;
@@ -314,6 +337,14 @@ pub async fn maintenance_command(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn test_access_request_has_a_fixed_recipient_and_encodes_the_account() {
+        let mail = test_access_mail("person+cirro@gmail.com").unwrap();
+        assert!(mail.starts_with("mailto:arunabhajana@gmail.com?"));
+        assert!(mail.contains("person%2Bcirro%40gmail.com"));
+        assert!(test_access_mail("user@gmail.com\r\nBcc:other@example.com").is_err());
+        assert!(test_access_mail("not-an-email").is_err());
+    }
     #[test]
     fn rebuilding_metadata_preserves_offline_records_and_preferences() {
         let mut c = rusqlite::Connection::open_in_memory().unwrap();

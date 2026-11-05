@@ -1,25 +1,18 @@
-import { Check, Monitor, Moon, Sun } from 'lucide-react';
-import type { Appearance } from './theme';
-
-const choices = [{ value: 'light', label: 'Light', icon: Sun }, { value: 'dark', label: 'Dark', icon: Moon }, { value: 'system', label: 'System', icon: Monitor }] as const;
-
-export default function AppearanceSettings({ value, onChange }: { value: Appearance; onChange: (value: Appearance) => void }) {
-  return <section className="panel appearance-panel">
-    <div className="appearance-heading"><div><h3>Theme</h3><p>Choose a theme, or follow your device.</p></div><span className="appearance-saved"><Check size={13}/>Saved automatically</span></div>
-    <div className="appearance-options" role="radiogroup" aria-label="Appearance" onKeyDown={event => {
-      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
-      event.preventDefault();
-      const index = choices.findIndex(choice => choice.value === value);
-      const next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (index + (['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : 1) + choices.length) % choices.length;
-      onChange(choices[next].value);
-      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next].focus();
-    }}>
-      {choices.map(({ value: mode, label, icon: Icon }) => <button key={mode} role="radio" aria-checked={value === mode} tabIndex={value === mode ? 0 : -1} className={`appearance-choice ${value === mode ? 'chosen' : ''}`} onClick={() => onChange(mode)}>
-        <span className={`theme-swatch ${mode}`} aria-hidden="true"><span className="swatch-sidebar"><i/><i/><i/></span><span className="swatch-content"><i/><span><i/><i/><i/></span></span></span>
-        <span className="appearance-label"><Icon size={16}/>{label}<span className="appearance-radio">{value === mode && <Check size={11}/>}</span></span>
-      </button>)}
-    </div>
-
-    <p className="appearance-help">{value === 'system' ? 'Updates automatically when your device changes between light and dark.' : `${value === 'dark' ? 'Dark' : 'Light'} appearance is used throughout Cirro.`}</p>
-  </section>;
+import {Check,Monitor,Moon,Sun} from 'lucide-react';
+import type {Appearance} from './theme';
+import {accentColours,defaultVisualPreferences,type VisualPreferences} from './visualPreferences';
+const choices=[{value:'light',label:'Light',icon:Sun},{value:'dark',label:'Dark',icon:Moon},{value:'system',label:'System',icon:Monitor}] as const;
+function Miniature({mode}:{mode:'light'|'dark'}){return <span className={`appearance-mini ${mode}`}><span className="mini-sidebar"><i/><i/><i/></span><span className="mini-content"><i/><span><i/><i/><i/></span></span></span>;}
+export default function AppearanceSettings({value,onChange,visual=defaultVisualPreferences,onVisualChange}:{value:Appearance;onChange:(value:Appearance)=>void;visual?:VisualPreferences;onVisualChange?:(value:VisualPreferences)=>void}){
+ return <section className="appearance-panel">
+  <div className="appearance-heading"><div><h3>Theme</h3><p>Choose Light, Dark or follow your device.</p></div></div>
+  <div className="appearance-options" role="radiogroup" aria-label="Appearance" onKeyDown={event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;event.preventDefault();const index=choices.findIndex(choice=>choice.value===value);const next=event.key==='Home'?0:event.key==='End'?2:(index+(['ArrowLeft','ArrowUp'].includes(event.key)?-1:1)+choices.length)%choices.length;onChange(choices[next].value);event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next].focus();}}>
+   {choices.map(({value:mode,label,icon:Icon})=><button type="button" key={mode} role="radio" aria-checked={value===mode} tabIndex={value===mode?0:-1} className={`appearance-choice ${value===mode?'chosen':''}`} onClick={()=>onChange(mode)}><span className={`appearance-card-art ${mode==='system'?'split':''}`} aria-hidden="true">{mode==='system'?<><Miniature mode="light"/><Miniature mode="dark"/></>:<Miniature mode={mode}/>}</span><span className="appearance-label"><Icon size={16}/>{label}<span className="appearance-radio">{value===mode&&<Check size={10}/>}</span></span></button>)}
+  </div>
+  <p className="appearance-help">{value==='system'?'Follows your device’s light or dark appearance.':`${value==='dark'?'Dark':'Light'} theme is active.`}</p>
+  <div className="appearance-preference"><div><h3>Accent colour</h3><p>Highlights and controls. Account colours are separate.</p></div><div className="accent-options" role="group" aria-label="Accent colour">{accentColours.map(colour=><button type="button" key={colour.id} aria-label={colour.name} title={colour.name} aria-pressed={visual.accent===colour.id} disabled={!onVisualChange} className="accent-option" onClick={()=>onVisualChange?.({...visual,accent:colour.id})}><span style={{background:colour.light}}>{visual.accent===colour.id&&<Check size={15}/>}</span></button>)}</div></div>
+  <div className="appearance-preference"><div><h3>Motion</h3><p>Follow your device’s accessibility setting or reduce animations.</p></div><div className="segmented" role="group" aria-label="Motion">{(['system','reduced'] as const).map(motion=><button type="button" key={motion} aria-pressed={visual.motion===motion} disabled={!onVisualChange} onClick={()=>onVisualChange?.({...visual,motion})}>{motion==='system'?'Follow system':'Reduce motion'}</button>)}</div></div>
+  <div className="appearance-preference"><div><h3>Reduce transparency</h3><p>Use solid backgrounds behind menus and dialogs.</p></div><button type="button" className="toggle" role="switch" aria-label="Reduce transparency" aria-checked={visual.reduceTransparency} disabled={!onVisualChange} onClick={()=>onVisualChange?.({...visual,reduceTransparency:!visual.reduceTransparency})}><span/></button></div>
+  <p className="appearance-device-note">Appearance changes apply immediately and save on this device.</p>
+ </section>;
 }

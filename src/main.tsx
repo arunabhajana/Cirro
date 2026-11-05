@@ -1,3 +1,4 @@
+import ReleaseExperience from './ReleaseExperience';
 import UpdateNotifications from './Updates';
 import {SecurityBoundary} from './Security';
 import React from 'react';
@@ -12,4 +13,5 @@ import './themes.css';
 import './manager.css';
 import './auth.css';
 import './cirro.css';
-ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><SecurityBoundary><AuthProvider><UpdateNotifications/><BrandSync/><App /></AuthProvider></SecurityBoundary></React.StrictMode>);
+import './settings.css';
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><SecurityBoundary><AuthProvider><ReleaseExperience/><UpdateNotifications/><BrandSync/><App /></AuthProvider></SecurityBoundary></React.StrictMode>);
