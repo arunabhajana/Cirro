@@ -104,9 +104,25 @@ jobs:
           $release = gh release view $env:GITHUB_REF_NAME --json assets | ConvertFrom-Json
           $names = $release.assets.name
           if (!($names -contains 'Cirro-android.apk') -or !($names -contains 'latest.json') -or !($names -match '\.exe$') -or !($names -match '\.sig$')) { throw 'Missing Android APK, Windows installer, update manifest or signature. Release remains a draft.' }
-          $assets = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:GITHUB_REF_NAME" | ConvertFrom-Json
-          $android = $assets.assets | Where-Object name -EQ 'Cirro-android.apk'
-          $expected = 'sha256:' + (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($LASTEXITCODE -ne 0 -or $android.digest -ne $expected) { throw 'Android asset digest verification failed. Release remains a draft.' }
+          # The Releases REST response does not expose an asset digest on every GitHub
+          # plan/API version. Verify the actual release download instead, so publishing
+          # is never coupled to that optional field.
+          $verifyDirectory = Join-Path $env:RUNNER_TEMP 'cirro-android-verified'
+          New-Item -ItemType Directory -Force -Path $verifyDirectory | Out-Null
+          $publishedApk = Join-Path $verifyDirectory 'Cirro-android.apk'
+          $downloaded = $false
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            if (Test-Path -LiteralPath $publishedApk) { Remove-Item -LiteralPath $publishedApk -Force }
+            gh release download $env:GITHUB_REF_NAME --pattern 'Cirro-android.apk' --dir $verifyDirectory --clobber
+            if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $publishedApk)) {
+              $downloaded = $true
+              break
+            }
+            Start-Sleep -Seconds (2 * $attempt)
+          }
+          if (!$downloaded) { throw 'Android APK could not be downloaded from the draft release for verification. Release remains a draft.' }
+          $expected = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
+          $actual = (Get-FileHash -LiteralPath $publishedApk -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw 'Android APK hash verification failed. Release remains a draft.' }
           gh release edit $env:GITHUB_REF_NAME --draft=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'Publishing failed' }
