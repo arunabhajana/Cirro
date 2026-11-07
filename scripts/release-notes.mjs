@@ -12,5 +12,5 @@ export function loadReleaseNotes(version,root=projectRoot){
  return release;
 }
 export function renderReleaseNotes(release){
- return [`# ${release.title}`,`Cirro ${release.version}`,release.summary,...release.groups.map(group=>`## ${group.title}\n\n${group.items.map(item=>`- **${item.title}** — ${item.description}`).join('\n')}`),'## Install','Download the Windows installer below. Future updates are available from Cirro → Settings → About.'].join('\n\n')+'\n';
+ return [`# ${release.title}`,`Cirro ${release.version}`,release.summary,...release.groups.map(group=>`## ${group.title}\n\n${group.items.map(item=>`- **${item.title}** — ${item.description}`).join('\n')}`),'## Install','Windows: download the .exe installer below. Android: download Cirro-android.apk. Future updates are available from Cirro’s settings.'].join('\n\n')+'\n';
 }

@@ -1,0 +1,96 @@
+name: Package Cirro Android
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      attach_to_release:
+        default: false
+        type: boolean
+    secrets:
+      ANDROID_GOOGLE_WEB_CLIENT_ID:
+        required: true
+      ANDROID_KEYSTORE_BASE64:
+        required: true
+      ANDROID_KEYSTORE_PASSWORD:
+        required: true
+      ANDROID_KEY_ALIAS:
+        required: true
+      ANDROID_KEY_PASSWORD:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, for example v1.0.1
+        required: true
+        type: string
+      attach_to_release:
+        description: Attach the signed APK to the existing GitHub release
+        default: false
+        type: boolean
+permissions:
+  contents: write
+concurrency:
+  group: cirro-android-release
+  cancel-in-progress: false
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_ANDROID_GOOGLE_WEB_CLIENT_ID: ${{ secrets.ANDROID_GOOGLE_WEB_CLIENT_ID }}
+      CIRRO_ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/android-release.jks
+      CIRRO_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      CIRRO_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      CIRRO_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Validate version and signing configuration
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          node --input-type=module <<'JS'
+          import {writeFileSync} from 'node:fs';
+          if(!/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_TAG||''))throw new Error('Use a stable version tag.');
+          const {updateVersions}=await import('./scripts/version-utils.mjs');
+          const {loadReleaseNotes}=await import('./scripts/release-notes.mjs');
+          loadReleaseNotes(process.env.RELEASE_TAG.slice(1));
+          updateVersions(process.env.RELEASE_TAG.slice(1));
+          for(const key of ['KEYSTORE_BASE64','CIRRO_ANDROID_KEYSTORE_PASSWORD','CIRRO_ANDROID_KEY_ALIAS','CIRRO_ANDROID_KEY_PASSWORD','VITE_ANDROID_GOOGLE_WEB_CLIENT_ID'])if(!process.env[key])throw new Error('Missing secret: '+key);
+          writeFileSync(process.env.CIRRO_ANDROID_KEYSTORE_PATH,Buffer.from(process.env.KEYSTORE_BASE64,'base64'),{mode:0o600});
+          JS
+          git merge-base --is-ancestor HEAD origin/main
+          chmod +x native/android/gradlew
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run android:release:apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cirro-Android-${{ inputs.tag }}
+          path: .qa/android-apks/Cirro-android.apk
+          if-no-files-found: error
+      - name: Attach APK to existing release
+        if: inputs.attach_to_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true || { echo 'Only draft release assets may be changed. Use the tagged release pipeline for publication.'; exit 1; }
+          gh release upload "$RELEASE_TAG" .qa/android-apks/Cirro-android.apk
+      - name: Remove temporary signing material
+        if: always()
+        run: rm -f -- "$CIRRO_ANDROID_KEYSTORE_PATH"

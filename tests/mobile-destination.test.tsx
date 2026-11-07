@@ -1,0 +1,7 @@
+import React from 'react';
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {afterEach,expect,it,vi} from 'vitest';
+import DestinationPicker from '../src/platforms/android/components/DestinationPicker';
+import {mobileDriveClient} from '../src/platforms/android/drive/client';
+afterEach(()=>{cleanup();vi.restoreAllMocks();});
+it('requires choosing an account in Unified and returns the chosen drive/folder',async()=>{const children=vi.spyOn(mobileDriveClient,'children').mockResolvedValue([{id:'folder',name:'Documents',mimeType:'application/vnd.google-apps.folder',capabilities:{canAddChildren:true}}]);const chosen=vi.fn();render(<DestinationPicker accounts={[{id:'a',name:'Personal',email:'a@example.com'},{id:'b',name:'Work',email:'b@example.com'}]} snapshots={{b:{account:'b',root:'work-root',files:[],drives:[{id:'team',name:'Team drive'}],quota:{used:0,total:1},syncedAt:''}}} onChoose={chosen} onConnect={()=>{}}/>);expect(children).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:/Work.*b@example/}));fireEvent.click(await screen.findByRole('button',{name:'Team drive'}));await screen.findByRole('button',{name:'Documents'});await waitFor(()=>expect(screen.getByRole('button',{name:'Use this folder'}).hasAttribute('disabled')).toBe(false));fireEvent.click(screen.getByRole('button',{name:'Use this folder'}));expect(chosen).toHaveBeenCalledWith({account:'b',folder:'team',name:'Work / Team drive'});expect(children).toHaveBeenCalledWith('b','team',expect.any(AbortSignal));});

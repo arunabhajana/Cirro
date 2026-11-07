@@ -1,5 +1,20 @@
 # Cirro
 
+Native Android: [APK setup, OAuth and USB live reload](native/android/README.md).
+Use `npm run android:apk` after installing Android Studio/SDK 36 and registering
+the debug signing SHA-1. Android supports native Google login, Drive metadata
+sync, unified multi-account browsing, shared items, Trash/restore, previews,
+offline files, configurable Home widgets and storage quotas. Android now includes
+resumable uploads, account/folder destination pickers, long-press bulk actions,
+copy/move across accounts, sharing controls and native notification settings.
+For frontend edits without reinstalling, install the live APK once with
+`npm run android:live:install`, then run `npm run android:live` over USB debugging.
+
+Android frontend preview: run `npm run dev:android`, then open the printed Network
+URL with `/android` on your phone. See [phone testing](docs/platforms/android-preview.md)
+and [platform structure](docs/platforms/architecture.md). Browser preview uses mock
+data. Native login and real Drive sync use the APK. Dark mode is in Settings.
+
 A React, Tailwind CSS, and Tauri desktop app for a calmer Google Drive experience. Connect up to five Google accounts with a local SQLite metadata cache.
 
 ## Run
@@ -64,4 +79,6 @@ Onboarding uses built-in demo items and works with an empty Drive. Practice acti
 
 Appearance settings include five accent colours, system/reduced motion and reduced transparency. Preferences apply immediately, persist on this device, and are restored before the interface paints. About and release-note version labels use the package version synchronized by the version-bump command and release CI.
 
-Cirro supports up to five connected Google accounts. Storage uses a compact summary with total usage, capacity, an account-coloured horizontal breakdown, and a labelled legend based on the current quota snapshot. Support includes a test-access request form which opens an email to arunabhajana@gmail.com for review and sending; it does not send silently or require embedded mail credentials. The same request is available from the sign-in screen for accounts not yet approved for testing.
+Cirro supports up to five connected Google accounts on Windows and three on Android. Unified and every account keep independent Homes; Windows also keeps separate sidebar navigation, pins, spacing and width for each view. Existing shared sidebar preferences migrate to Unified. Storage uses a compact summary with total usage, capacity, an account-coloured horizontal breakdown, and a labelled legend based on the current quota snapshot. Support includes a test-access request form which opens an email to arunabhajana@gmail.com for review and sending; it does not send silently or require embedded mail credentials. The same request is available from the sign-in screen for accounts not yet approved for testing.
+
+Android CI checks pull requests and main changes. Version tags build the signed Android APK together with the Windows release, and publish only after the APK and updater assets are verified. Android detects stable release APKs, downloads updates with progress and hands installation to Android. See [Android setup, signing and release requirements](native/android/README.md#cicd-and-launcher-assets).

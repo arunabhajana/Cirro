@@ -8,7 +8,13 @@ concurrency:
   group: cirro-release
   cancel-in-progress: false
 jobs:
+  android-build:
+    uses: ./.github/workflows/android-release.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit
   windows-release:
+    needs: android-build
     runs-on: windows-latest
     timeout-minutes: 90
     env:
@@ -79,13 +85,28 @@ jobs:
           uploadUpdaterJson: true
           updaterJsonPreferNsis: true
           args: --bundles nsis
+      - name: Fetch signed Android build
+        uses: actions/download-artifact@v4
+        with:
+          name: Cirro-Android-${{ github.ref_name }}
+          path: ${{ runner.temp }}/cirro-android
       - name: Verify release assets and publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
+          $apk = Join-Path $env:RUNNER_TEMP 'cirro-android/Cirro-android.apk'
+          if (!(Test-Path -LiteralPath $apk)) { throw 'Missing signed Android APK. Release remains a draft.' }
+          $draft = gh release view $env:GITHUB_REF_NAME --json isDraft | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or !$draft.isDraft) { throw 'Only draft releases may be assembled.' }
+          gh release upload $env:GITHUB_REF_NAME $apk --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Android APK upload failed. Release remains a draft.' }
           $release = gh release view $env:GITHUB_REF_NAME --json assets | ConvertFrom-Json
           $names = $release.assets.name
-          if (!($names -contains 'latest.json') -or !($names -match '\.exe$') -or !($names -match '\.sig$')) { throw 'Missing installer, update manifest or signature. Release remains a draft.' }
+          if (!($names -contains 'Cirro-android.apk') -or !($names -contains 'latest.json') -or !($names -match '\.exe$') -or !($names -match '\.sig$')) { throw 'Missing Android APK, Windows installer, update manifest or signature. Release remains a draft.' }
+          $assets = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:GITHUB_REF_NAME" | ConvertFrom-Json
+          $android = $assets.assets | Where-Object name -EQ 'Cirro-android.apk'
+          $expected = 'sha256:' + (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($LASTEXITCODE -ne 0 -or $android.digest -ne $expected) { throw 'Android asset digest verification failed. Release remains a draft.' }
           gh release edit $env:GITHUB_REF_NAME --draft=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'Publishing failed' }

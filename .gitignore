@@ -123,3 +123,20 @@ Desktop.ini
 /.agents/
 /codex-clipboard-*.png
 /screenshots/
+
+# Native Android generated outputs
+/dist-android/
+/native/android/.gradle/
+/native/android/**/build/
+/native/android/local.properties
+/native/android/app/src/main/assets/public/
+/native/android/app/src/main/assets/capacitor.config.json
+/native/android/app/src/main/assets/capacitor.plugins.json
+/native/android/capacitor-cordova-android-plugins/
+
+# Safe public-ID configuration template
+!android.env.example
+
+# Android release signing material stays outside source control
+*.jks
+*.keystore

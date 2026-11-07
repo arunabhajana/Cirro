@@ -1,6 +1,6 @@
 import {invoke,isTauri} from '@tauri-apps/api/core';
 import {useEffect,useRef,useState,type SetStateAction} from 'react';
-export function upgradeDevicePreference<T>(key:string,value:T):T {if(key==='device:sidebar'&&value&&typeof value==='object'&&!('transfersConfigured' in value)){const sidebar=value as {hidden?:string[]};return {...value,hidden:[...new Set([...(sidebar.hidden||[]),'Transfers'])],transfersConfigured:true} as T;}return value;}
+export function upgradeDevicePreference<T>(key:string,value:T):T {if((key==='device:sidebar'||/^sidebar:.*:preferences$/.test(key))&&value&&typeof value==='object'&&!('transfersConfigured' in value)){const sidebar=value as {hidden?:string[]};return {...value,hidden:[...new Set([...(sidebar.hidden||[]),'Transfers'])],transfersConfigured:true} as T;}return value;}
 const cache=new Map<string,unknown>();
 const writes=new Map<string,Promise<unknown>>();
 export async function waitForDevicePreference(key:string){await writes.get(key);}

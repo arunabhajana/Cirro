@@ -1,0 +1,10 @@
+import {cleanup,renderHook,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const auth=vi.hoisted(()=>({restoreGoogle:vi.fn(),signInGoogle:vi.fn(),signOutGoogle:vi.fn(),restoreAccountProfiles:vi.fn(),saveAccountProfile:vi.fn(),clearAccountProfiles:vi.fn(),removeAccountProfile:vi.fn()}));
+vi.mock('../src/platforms/android/auth/nativeGoogle',()=>({...auth,nativeAndroid:true,authError:(error:Error)=>error.message}));
+vi.mock('../src/platforms/android/auth/accountProfiles',()=>auth);
+import {useMobileAuth} from '../src/platforms/android/auth/useMobileAuth';
+const a={id:'a',name:'One',email:'one@example.com',picture:null},b={id:'b',name:'Two',email:'two@example.com',picture:null};
+beforeEach(()=>{localStorage.clear();vi.resetAllMocks();auth.restoreAccountProfiles.mockResolvedValue([a,b]);auth.restoreGoogle.mockResolvedValue(null);});afterEach(cleanup);
+it('restores multiple saved identities and the selected account without prompting',async()=>{localStorage.setItem('cirro-active-account','b');const {result}=renderHook(useMobileAuth);await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.users).toEqual([a,b]);expect(result.current.user).toEqual(b);expect(auth.signInGoogle).not.toHaveBeenCalled();});
+it('retains saved identities when restoring the SDK session fails',async()=>{auth.restoreGoogle.mockRejectedValue(new Error('Expired'));const {result}=renderHook(useMobileAuth);await waitFor(()=>expect(result.current.loading).toBe(false));expect(result.current.users).toHaveLength(2);});

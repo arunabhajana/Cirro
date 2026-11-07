@@ -1,0 +1,9 @@
+import {act,cleanup,renderHook,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+const native=vi.hoisted(()=>({listOffline:vi.fn(),getOfflineLocation:vi.fn(),saveOffline:vi.fn(),removeOffline:vi.fn(),chooseOfflineLocation:vi.fn(),useAppOfflineStorage:vi.fn()}));
+vi.mock('../src/platforms/android/offline/native',()=>native);
+import {useOfflineFiles} from '../src/platforms/android/offline/useOfflineFiles';
+const record={key:'a:f',rawId:'f',account:'a',name:'file.pdf',mime:'application/pdf',size:20,modified:'today',savedAt:1,downloadName:'file.pdf'};
+beforeEach(()=>{vi.resetAllMocks();native.listOffline.mockResolvedValue([record]);native.getOfflineLocation.mockResolvedValue({name:'App storage',custom:false});});afterEach(cleanup);
+it('scopes offline files to connected accounts and preserves a selected location',async()=>{native.chooseOfflineLocation.mockResolvedValue({name:'Documents',custom:true});const {result,rerender}=renderHook(({ids})=>useOfflineFiles(ids),{initialProps:{ids:['a']}});await waitFor(()=>expect(result.current.records).toHaveLength(1));await act(async()=>{await result.current.choose();});expect(result.current.location.name).toBe('Documents');rerender({ids:['b']});await waitFor(()=>expect(result.current.records).toHaveLength(0));});
+it('does not restore a disconnected account after a late refresh',async()=>{const {result,rerender}=renderHook(({ids})=>useOfflineFiles(ids),{initialProps:{ids:['a']}});await waitFor(()=>expect(result.current.records).toHaveLength(1));let finish!:(records:typeof record[])=>void;native.listOffline.mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));let pending!:Promise<void>;act(()=>{pending=result.current.refresh();});rerender({ids:[]});await act(async()=>{finish([record]);await pending;});expect(result.current.records).toEqual([]);});

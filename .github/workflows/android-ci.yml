@@ -1,0 +1,40 @@
+name: Android build
+on:
+  pull_request:
+    paths: ['src/**', 'public/**', 'native/android/**', 'scripts/**', 'package*.json', '*config*', '.github/workflows/android-*.yml']
+  push:
+    branches: [main]
+    paths: ['src/**', 'public/**', 'native/android/**', 'scripts/**', 'package*.json', '*config*', '.github/workflows/android-*.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_ANDROID_GOOGLE_WEB_CLIENT_ID: ${{ vars.ANDROID_GOOGLE_WEB_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - run: chmod +x native/android/gradlew
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run android:apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cirro-Android-CI
+          path: .qa/android-apks/Cirro-debug.apk
+          if-no-files-found: error

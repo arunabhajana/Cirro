@@ -1,0 +1,11 @@
+{
+  "version": "1.1.0",
+  "title": "Cirro 1.1.0, now on Android",
+  "summary": "Your Google Drive accounts, together in a workspace made for your phone.",
+  "items": [
+    {"title":"Three accounts, one workspace","description":"Connect up to three Google accounts, switch between them or browse Unified, and set your own account labels and colours."},
+    {"title":"Your own Home and search","description":"Reorder sections and widgets, pin folders, and search with account and file-type filters. Every account and Unified keeps its own Home."},
+    {"title":"Files without losing your place","description":"Upload, download, copy, move, share and manage selected files. Stay on the current page and follow transfers in Android notifications."},
+    {"title":"Built for Android","description":"Dark mode, accent colours, themed Cirro icons, offline storage choices and signed app updates with download progress."}
+  ]
+}

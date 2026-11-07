@@ -1,0 +1,17 @@
+import ReleaseExperience from '../../ReleaseExperience';
+import UpdateNotifications from '../../Updates';
+import {SecurityBoundary} from '../../Security';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from '../../App';
+import { AuthProvider } from '../../auth';
+import { BrandSync } from '../../branding';
+import '@fontsource-variable/inter';
+import '../../styles.css';
+import '../../refinements.css';
+import '../../themes.css';
+import '../../manager.css';
+import '../../auth.css';
+import '../../cirro.css';
+import '../../settings.css';
+ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><SecurityBoundary><AuthProvider><ReleaseExperience/><UpdateNotifications/><BrandSync/><App /></AuthProvider></SecurityBoundary></React.StrictMode>);

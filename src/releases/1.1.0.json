@@ -1,0 +1,31 @@
+{
+  "version": "1.1.0",
+  "title": "Cirro, now on Android",
+  "summary": "Meet Cirro for Android, with a phone-first workspace for your Google Drive accounts. On Windows, Unified and each account now keep independent sidebars as well as their own Homes.",
+  "groups": [
+    {"title":"Added","items":[
+      {"title":"Introducing Cirro for Android","description":"A native Android app with Google sign-in, Unified view, up to three connected accounts, account labels and colours, and a clean mobile interface with light and dark themes."},
+      {"title":"Your Drive on your phone","description":"Browse My Drive, Shared with me, shared drives, Recent, Starred and Trash. Upload files, create folders, preview supported files, save offline copies, manage sharing, and copy or move selected files within or between connected drives."},
+      {"title":"A sidebar for every desktop view","description":"Unified and each Google account now keep separate sidebar navigation order, hidden pages, pinned shortcuts, compact spacing and sidebar width. Switching accounts restores that view’s sidebar."},
+      {"title":"Android release updates","description":"The signed Android APK is built alongside Windows releases. Cirro detects stable Android releases, downloads updates with progress, and opens Android’s installer when you choose to install."}
+    ]},
+    {"title":"Improved","items":[
+      {"title":"Mobile Home and search","description":"Customize and reorder Home sections and widgets independently for each account and Unified. Search synced file names using account and file-type filters, with recent searches saved per Home."},
+      {"title":"Transfers without losing your place","description":"Starting an Android transfer keeps the current page open. With notification permission, Android shows upload, offline-download, copy, move and Trash progress, followed by readable completion or error details."},
+      {"title":"Mobile personalization","description":"Grouped settings include accent colours, dark mode, notification controls and an offline download location. Android launcher, themed and notification icons use Cirro branding."}
+    ]},
+    {"title":"Fixed","items":[
+      {"title":"Sidebar changes crossing account boundaries","description":"Customizing one desktop sidebar no longer changes the others. The previous shared sidebar is preserved in Unified; individual accounts start with their own layout."},
+      {"title":"Mobile system-bar layout","description":"Native insets keep scrolling pages and previews below the status bar. Widget cards keep a consistent height, and storage figures use readable units with at most one decimal place."}
+    ]},
+    {"title":"Security & privacy","items":[
+      {"title":"Verified Android updates","description":"Before installation, Android updates are checked against the release checksum, Cirro package name, newer version code and the production signing certificate. Signing keys and passwords remain outside source control."},
+      {"title":"Account-aware access","description":"Google sign-in and Drive permissions remain tied to the selected account. Permission requests require an explicit Google approval flow, and previews retain their hard download-size limit."}
+    ]},
+    {"title":"Limitations","items":[
+      {"title":"Platform account limits","description":"Android supports up to three connected Google accounts; Windows continues to support five. Each device keeps its own Home and sidebar preferences."},
+      {"title":"Android previews and background activity","description":"Previews have a 32 MiB hard limit. Shared-file alerts are detected during sync, and interrupted transfers may require retrying after the app process is closed. Google Workspace files copied across accounts require destination access."},
+      {"title":"First production Android installation","description":"Existing debug installations must be replaced once to use the production-signed Android app. Future production updates use the same signing key and Android’s installation confirmation."}
+    ]}
+  ]
+}

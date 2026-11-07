@@ -1,7 +1,7 @@
 {
   "name": "cirro",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -15,18 +15,37 @@
     "predev": "node scripts/prepare-assets.mjs",
     "prebuild": "node scripts/bump-version.mjs --check && node scripts/prepare-assets.mjs",
     "version:bump": "node scripts/bump-version.mjs",
-    "version:check": "node scripts/bump-version.mjs --check"
+    "version:check": "node scripts/bump-version.mjs --check",
+    "dev:android": "vite --host 0.0.0.0 --port 1421 --open /android",
+    "preview:android": "vite preview --host 0.0.0.0 --port 1421 --open /android",
+    "build:android": "tsc --noEmit && vite build --config vite.android.config.ts",
+    "android:sync": "npm run build:android && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "npm run android:sync && cap run android",
+    "android:apk": "npm run android:sync && node scripts/android-gradle.mjs assembleDebug",
+    "android:release:apk": "npm run android:sync && node scripts/android-gradle.mjs assembleRelease",
+    "android:signing-report": "node scripts/android-gradle.mjs signingReport",
+    "android:share": "node scripts/serve-android-apk.mjs",
+    "android:live:apk": "node scripts/android-live.mjs build",
+    "android:live:install": "node scripts/android-live.mjs install",
+    "android:live": "node scripts/android-live.mjs start",
+    "prebuild:android": "node scripts/prepare-assets.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capgo/capacitor-social-login": "^8.7.6",
     "@fontsource-variable/inter": "^5.3.0",
     "@tauri-apps/api": "^2.0.0",
     "fflate": "^0.8.3",
+    "jose": "^6.2.15",
     "lucide-react": "^0.468.0",
     "pdfjs-dist": "^6.4.299",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@tailwindcss/vite": "^4.0.0",
     "@tauri-apps/cli": "^2.0.0",
     "@testing-library/react": "^16.3.3",

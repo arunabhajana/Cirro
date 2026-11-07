@@ -9,6 +9,19 @@ fn database(window: &Window) -> Result<rusqlite::Connection, String> {
     .map_err(|e| e.to_string())?;
     Ok(c)
 }
+// Only Unified inherits the former device-wide sidebar. Accounts start independently.
+fn migrate_shared_sidebar(c: &rusqlite::Connection, key: &str) -> Result<Option<Value>, String> {
+    let source = match key {
+        "sidebar:unified:preferences" => "device:sidebar",
+        "sidebar:unified:pins" => "device:sidebarPins",
+        _ => return Ok(None),
+    };
+    let raw = c.query_row("SELECT value FROM device_preferences WHERE key=?", [source], |row| row.get::<_, String>(0)).optional().map_err(|error| error.to_string())?;
+    let Some(raw) = raw else { return Ok(None); };
+    let value = serde_json::from_str::<Value>(&raw).map_err(|error| error.to_string())?;
+    c.execute("INSERT OR IGNORE INTO device_preferences VALUES(?,?)", rusqlite::params![key, raw]).map_err(|error| error.to_string())?;
+    Ok(Some(value))
+}
 #[tauri::command]
 pub fn device_preference(
     window: Window,
@@ -27,6 +40,9 @@ pub fn device_preference(
         .map_err(|e| e.to_string())?;
     if let Some(value) = existing {
         return serde_json::from_str(&value).map_err(|e| e.to_string());
+    }
+    if let Some(value) = migrate_shared_sidebar(&c, &key)? {
+        return Ok(value);
     }
     let Some(legacy) = migrate_key else {
         return Ok(Value::Null);
@@ -92,3 +108,19 @@ pub fn device_setting(window: Window, key: String, value: Value) -> Result<(), S
     Ok(())
 }
 use rusqlite::OptionalExtension;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn shared_sidebar_migrates_to_unified_only() {
+        let c = rusqlite::Connection::open_in_memory().unwrap();
+        c.execute_batch("CREATE TABLE device_preferences(key TEXT PRIMARY KEY,value TEXT NOT NULL); INSERT INTO device_preferences VALUES('device:sidebar','{\"compact\":true}'); INSERT INTO device_preferences VALUES('device:sidebarPins','[\"one::folder\"]');").unwrap();
+        assert_eq!(migrate_shared_sidebar(&c, "sidebar:account:one:preferences").unwrap(), None);
+        assert_eq!(migrate_shared_sidebar(&c, "sidebar:account:two:pins").unwrap(), None);
+        assert_eq!(migrate_shared_sidebar(&c, "sidebar:unified:preferences").unwrap(), Some(serde_json::json!({"compact":true})));
+        assert_eq!(migrate_shared_sidebar(&c, "sidebar:unified:pins").unwrap(), Some(serde_json::json!(["one::folder"])));
+        let legacy: String = c.query_row("SELECT value FROM device_preferences WHERE key='device:sidebarPins'", [], |row| row.get(0)).unwrap();
+        assert_eq!(legacy, "[\"one::folder\"]");
+    }
+}

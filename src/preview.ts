@@ -1,5 +1,5 @@
 import { unzipSync, strFromU8 } from 'fflate';
-import { describeFile } from './fileTypes';
+import { describeFile } from './shared/fileDescription';
 import type { DriveFile } from './data';
 export type PreviewContent = { kind: 'text'; text: string; note?: string } | { kind: 'table'; rows: string[][]; note?: string } | { kind: 'archive'; entries: { name: string; size: number; directory: boolean }[]; note?: string };
 const MAX_SOURCE = 32 * 1024 * 1024;
@@ -26,14 +26,13 @@ export function delimitedRows(text: string, delimiter = ','): string[][] {
   if (rows.length < 100 && (field || row.length)) { if (row.length < 24) row.push(field); rows.push(row); }
   return rows;
 }
-export async function loadPreview(file: DriveFile, signal: AbortSignal): Promise<PreviewContent> {
+export async function loadPreview(file: DriveFile, signal: AbortSignal, sourceBlob?: Blob): Promise<PreviewContent> {
   if (!file.url?.startsWith('blob:')) throw new Error('File content is not available in memory. Open Quick Look again to request it from Google Drive.');
   const units = ['B','KB','MB','GB','TB'];
   const unit = units.indexOf(file.size.split(' ').pop()?.toUpperCase() || 'B');
   if ((parseFloat(file.size) || 0) * 1000 ** Math.max(0, unit) > MAX_SOURCE) throw new Error('Quick previews support files up to 32 MB. Download this file to open it.');
-  const response = await fetch(file.url, { signal });
-  if (!response.ok) throw new Error('This local file is no longer available. Add it again to preview.');
-  const blob = await response.blob();
+  let blob=sourceBlob;
+  if(!blob){const response=await fetch(file.url,{signal});if(!response.ok)throw new Error('This local file is no longer available. Add it again to preview.');blob=await response.blob();}
   const info = describeFile(file);
   if (blob.size > MAX_SOURCE) throw new Error('Quick previews support files up to 32 MB. Download this file to open it.');
   const bytes = new Uint8Array(await blob.arrayBuffer());

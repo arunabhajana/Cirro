@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { ArrowLeftRight, CloudOff, Clock3, Folder, HardDrive, House, Star, Trash2, Users } from 'lucide-react';
+import { navigation, type Page } from './shared/navigation';
+export { navigation, type Page } from './shared/navigation';
 import type { DriveFile } from './data';
 
-export type Page = 'Home' | 'My files' | 'Shared with me' | 'Starred' | 'Recent' | 'Trash' | 'Storage' | 'Settings' | 'Transfers' | 'Offline files';
-export const navigation = [{ name: 'Home', icon: House }, { name: 'My files', icon: Folder }, { name: 'Shared with me', icon: Users }, { name: 'Starred', icon: Star }, { name: 'Recent', icon: Clock3 }, { name: 'Trash', icon: Trash2 }, { name: 'Storage', icon: HardDrive }, {name:'Transfers',icon:ArrowLeftRight}, {name:'Offline files',icon:CloudOff}] satisfies { name: Page; icon: typeof House }[];
 export type SidebarPreferences = { order: Page[]; hidden: Page[]; showPins: boolean; compact: boolean; wide: boolean; transfersConfigured?: boolean };
 export const defaultSidebar: SidebarPreferences = { order: navigation.map(item => item.name), hidden: ['Transfers'], transfersConfigured:true, showPins: true, compact: false, wide: false };
 type Location = { page: Page; folder: string | null; scope: string };
