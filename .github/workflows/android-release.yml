@@ -75,7 +75,13 @@ jobs:
           for(const key of ['KEYSTORE_BASE64','CIRRO_ANDROID_KEYSTORE_PASSWORD','CIRRO_ANDROID_KEY_ALIAS','CIRRO_ANDROID_KEY_PASSWORD','VITE_ANDROID_GOOGLE_WEB_CLIENT_ID'])if(!process.env[key])throw new Error('Missing secret: '+key);
           writeFileSync(process.env.CIRRO_ANDROID_KEYSTORE_PATH,Buffer.from(process.env.KEYSTORE_BASE64,'base64'),{mode:0o600});
           JS
-          git merge-base --is-ancestor HEAD origin/main
+          # A tag-triggered checkout may not leave origin/main available even
+          # with fetch-depth: 0. Fetch it explicitly before validating the tag.
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo 'The tagged commit must already be present on origin/main.' >&2
+            exit 1
+          fi
           chmod +x native/android/gradlew
           sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - run: npm ci
