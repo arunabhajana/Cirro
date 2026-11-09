@@ -14,6 +14,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(AppAppearancePlugin.class);
         registerPlugin(AccountVaultPlugin.class);
+        registerPlugin(BiometricLockPlugin.class);
         registerPlugin(OfflineFilesPlugin.class);
         registerPlugin(FileTransfersPlugin.class);
         registerPlugin(CirroNotificationsPlugin.class);

@@ -47,6 +47,6 @@ export function useMobileAuth() {
     catch (reason) { setError(authError(reason)); return false; }
     finally { locked.current = false; setBusy(false); }
   }
-  async function remove(id:string) {if(locked.current)return false;locked.current=true;setBusy(true);setError('');try{await signOutGoogle();await removeAccountProfile(id);const next=users.filter(profile=>profile.id!==id);setUsers(next);if(user?.id===id)setUser(next[0]||null);return true;}catch(reason){setError(authError(reason));return false;}finally{locked.current=false;setBusy(false);}}
+  async function remove(id:string) {if(locked.current)return false;locked.current=true;setBusy(true);setError('');try{await removeAccountProfile(id);const next=users.filter(profile=>profile.id!==id);setUsers(next);if(user?.id===id){const replacement=next[0]||null;setUser(replacement);try{if(replacement)localStorage.setItem('cirro-active-account',replacement.id);else localStorage.removeItem('cirro-active-account');}catch{}}return true;}catch(reason){setError(authError(reason));return false;}finally{locked.current=false;setBusy(false);}}
   return { user, users, remove, loading, busy, error, signIn, select, signOut, native: nativeAndroid };
 }

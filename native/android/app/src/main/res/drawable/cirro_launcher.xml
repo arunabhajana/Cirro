@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="22%">
-    <bitmap android:src="@drawable/cirro_mark" android:gravity="fill"/>
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="12%">
+    <bitmap android:src="@drawable/cirro_mark_beta" android:gravity="fill"/>
 </inset>

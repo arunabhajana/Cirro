@@ -127,16 +127,18 @@ pub async fn auth_status(window: Window, state: State<'_, AuthState>) -> Result<
             if saved.client_id != CLIENT_ID {
                 clear_saved()?;
             } else {
+                // Keep a locally encrypted, previously verified profile available while
+                // the refresh check runs. A temporary offline Google endpoint must not
+                // turn a saved session into an apparent sign-out.
+                session.profile = Some(saved.profile.clone());
                 // A refresh proves the saved grant is still valid; userinfo binds it to the saved subject.
                 let client = http()?;
-                let response = client.post("https://oauth2.googleapis.com/token").form(&[
+                let response = match client.post("https://oauth2.googleapis.com/token").form(&[
                     ("client_id", CLIENT_ID), ("client_secret", CLIENT_SECRET),
                     ("refresh_token", saved.refresh_token.as_str()), ("grant_type", "refresh_token")
-                ]).send().await.map_err(|_| "Could not restore your session. Check your connection and retry, or sign in again.".to_string())?;
+                ]).send().await { Ok(response) => response, Err(_) => { session.checked = true; return Ok(Status { configured: true, user: session.profile.clone() }); } };
                 let status = response.status();
-                let tokens: serde_json::Value = response.json().await.map_err(|_| {
-                    "Google returned an unreadable session response. Please retry.".to_string()
-                })?;
+                let tokens: serde_json::Value = match response.json().await { Ok(tokens) => tokens, Err(_) => { session.checked = true; return Ok(Status { configured: true, user: session.profile.clone() }); } };
                 if !status.is_success() {
                     if tokens["error"] == "invalid_grant" {
                         clear_saved()?;
@@ -146,26 +148,23 @@ pub async fn auth_status(window: Window, state: State<'_, AuthState>) -> Result<
                             user: None,
                         });
                     }
-                    return Err("Google could not restore your session. Check your OAuth configuration and retry.".into());
+                    session.checked = true;
+                    return Ok(Status { configured: true, user: session.profile.clone() });
                 }
-                let access = tokens["access_token"]
-                    .as_str()
-                    .ok_or("Google did not return a session token.")?;
-                let response = client
+                let access = match tokens["access_token"].as_str() {
+                    Some(access) => access,
+                    None => { session.checked = true; return Ok(Status { configured: true, user: session.profile.clone() }); }
+                };
+                let response = match client
                     .get("https://openidconnect.googleapis.com/v1/userinfo")
                     .bearer_auth(access)
                     .send()
-                    .await
-                    .map_err(|_| {
-                        "Could not verify your saved Google account. Please retry.".to_string()
-                    })?;
+                    .await { Ok(response) => response, Err(_) => { session.checked = true; return Ok(Status { configured: true, user: session.profile.clone() }); } };
                 if !response.status().is_success() {
-                    return Err("Could not verify your Google account. Sign in again.".into());
+                    session.checked = true;
+                    return Ok(Status { configured: true, user: session.profile.clone() });
                 }
-                let info: serde_json::Value = response
-                    .json()
-                    .await
-                    .map_err(|_| "Google returned an unreadable profile.".to_string())?;
+                let info: serde_json::Value = match response.json().await { Ok(info) => info, Err(_) => { session.checked = true; return Ok(Status { configured: true, user: session.profile.clone() }); } };
                 if info["sub"].as_str() != Some(saved.profile.id.as_str()) {
                     clear_saved()?;
                     return Err("Your saved account has changed. Sign in again.".into());
