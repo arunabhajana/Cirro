@@ -1,4 +1,4 @@
-import release from './releases/1.1.0.json';
+import release from './releases/1.2.0.json';
 export const milestoneVersion=release.version;
 export const releaseTitle=release.title;
 export const releaseSummary=release.summary;

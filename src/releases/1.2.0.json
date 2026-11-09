@@ -1,0 +1,17 @@
+{
+  "version": "1.2.0",
+  "title": "Cirro 1.2.0",
+  "summary": "A smoother, more personal Cirro experience across Windows and Android.",
+  "groups": [
+    {"title":"New","items":[
+      {"title":"Biometric app lock on Android","description":"Protect Cirro with your phone’s fingerprint or face unlock. Turn App lock on from Settings → Privacy."},
+      {"title":"Search history","description":"Quickly return to recent searches from the search field. Search history stays on your device and can be cleared at any time."},
+      {"title":"Access request before sign-in","description":"If your Google account has not been approved for early access, choose Request access before continuing to Google sign-in."}
+    ]},
+    {"title":"Improved","items":[
+      {"title":"Stay signed in","description":"Cirro keeps your connected accounts available between launches and refreshes access when needed. A temporary connection problem no longer immediately signs you out."},
+      {"title":"Android app icon","description":"The Cirro launcher icon now uses a cleaner blue background and a cloud mark with a Beta badge."},
+      {"title":"Account settings on Android","description":"When you connect multiple accounts, Settings now shows them together in a compact account overview."}
+    ]}
+  ]
+}

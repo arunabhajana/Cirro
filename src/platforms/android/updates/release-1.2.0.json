@@ -1,0 +1,12 @@
+{
+  "version": "1.2.0",
+  "title": "A more personal Cirro",
+  "summary": "New ways to protect your account and get back to the files you need.",
+  "items": [
+    {"title":"Unlock with biometrics","description":"Protect Cirro with your Android fingerprint or face unlock. Enable App lock in Settings → Privacy."},
+    {"title":"Find recent searches","description":"Return to recent searches from the search screen. Your history is stored locally and can be cleared whenever you like."},
+    {"title":"Request access before signing in","description":"Google accounts must be approved for Cirro early access. Request approval from the sign-in confirmation before continuing."},
+    {"title":"Stay signed in","description":"Your connected accounts remain available between launches while Cirro refreshes access in the background."},
+    {"title":"A refreshed Cirro icon","description":"The Android launcher now features a cleaner blue cloud icon with a Beta badge."}
+  ]
+}
