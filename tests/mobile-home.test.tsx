@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import MobileApp from '../src/platforms/android/MobileApp';
 import { accessRequestUrl } from '../src/platforms/android/components/AccessRequest';
 
@@ -15,9 +15,9 @@ afterEach(cleanup);
 it('shows sign-in and the access form, with a separate preview entry', async () => {
   render(<MobileApp/>);
   fireEvent.click(screen.getByRole('button', { name: 'Continue with Google' }));
-  expect((await screen.findByRole('alert')).textContent).toContain('Android APK');
-  fireEvent.click(screen.getByRole('button', { name: /Need access/ }));
-  expect(screen.getByLabelText('Google account email')).toBeTruthy();
+  const earlyAccess=await screen.findByRole('dialog', { name: 'Cirro early access' });
+  fireEvent.click(within(earlyAccess).getByRole('button', { name: /Need access/ }));
+  expect(within(earlyAccess).getByLabelText('Google account email')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Explore UI preview' }));
   expect(screen.getByRole('heading', { name: 'Home' })).toBeTruthy();
   expect(screen.getByText('5.8 GB left')).toBeTruthy();
