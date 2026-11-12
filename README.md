@@ -1,84 +1,346 @@
-# Cirro
+ <p align="center">
+  <img src="public/branding/cirro-transparent.png" width="140" alt="Cirro" />
+</p>
 
-Native Android: [APK setup, OAuth and USB live reload](native/android/README.md).
-Use `npm run android:apk` after installing Android Studio/SDK 36 and registering
-the debug signing SHA-1. Android supports native Google login, Drive metadata
-sync, unified multi-account browsing, shared items, Trash/restore, previews,
-offline files, configurable Home widgets and storage quotas. Android now includes
-resumable uploads, account/folder destination pickers, long-press bulk actions,
-copy/move across accounts, sharing controls and native notification settings.
-For frontend edits without reinstalling, install the live APK once with
-`npm run android:live:install`, then run `npm run android:live` over USB debugging.
+<h1 align="center">Cirro</h1>
 
-Android frontend preview: run `npm run dev:android`, then open the printed Network
-URL with `/android` on your phone. See [phone testing](docs/platforms/android-preview.md)
-and [platform structure](docs/platforms/architecture.md). Browser preview uses mock
-data. Native login and real Drive sync use the APK. Dark mode is in Settings.
+<p align="center">
+  A customizable, multi-account Google Drive client for Windows and Android.
+</p>
 
-A React, Tailwind CSS, and Tauri desktop app for a calmer Google Drive experience. Connect up to five Google accounts with a local SQLite metadata cache.
+<p align="center">
+  <a href="https://github.com/arunabhajana/Cirro">Repository</a> ·
+  <a href="https://github.com/arunabhajana/Cirro/issues">Issues</a> ·
+  <a href="https://github.com/arunabhajana/Cirro/releases">Releases</a>
+</p>
 
-## Run
+---
 
-```sh
+## Overview
+
+Cirro is a Google Drive client built for Windows and Android. It provides an alternative way to browse, organize and manage your Google Drive files, with an emphasis on customization and a consistent experience across devices.
+
+Connect multiple Google accounts, personalize your home screen, configure your navigation bar and manage your files from one place.
+
+Cirro uses the official Google Drive API and Google OAuth for account access.
+
+## Features
+
+### Accounts
+- Connect multiple Google accounts.
+- Switch between accounts.
+- Browse files from individual accounts.
+- Manage account-specific settings.
+
+### Home
+- Customizable home screen.
+- Pin frequently accessed files and folders.
+- Recent files and starred items.
+- Configurable home widgets.
+
+### Navigation
+- Customizable navigation bar.
+- Reorder navigation items.
+- Pin frequently used locations.
+- Adjust sidebar width and layout.
+
+### File Management
+- Browse files and folders.
+- Upload and download files.
+- Create and manage folders.
+- Rename, copy, move and delete files.
+- Star important files.
+- Search across Drive.
+- Grid and list views.
+- Sorting and multi-selection.
+- Manage shared files and Trash.
+
+### File Preview
+- Image previews.
+- Video playback.
+- PDF viewing.
+- Text and code previews.
+- ZIP archive inspection.
+- Supported Office document previews.
+
+### Appearance
+- Light and dark themes.
+- System theme support.
+- Custom accent colours.
+- Adjustable interface preferences.
+- Reduced motion and transparency options.
+
+### Android
+- Native Google sign-in.
+- Offline file access.
+- Resumable uploads.
+- Native Android integration.
+- Platform-specific interface and settings.
+
+## Platforms
+
+| Platform | Framework |
+|---|---|
+| Windows | Tauri, React |
+| Android | Capacitor, React |
+
+## Technology
+
+| Technology | Usage |
+|---|---|
+| React | Frontend |
+| TypeScript | Application logic |
+| Tailwind CSS | Styling |
+| Vite | Build tooling |
+| Tauri | Windows application |
+| Rust | Desktop native functionality |
+| SQLite | Local data storage |
+| Capacitor | Android integration |
+| Kotlin | Native Android functionality |
+| Google Drive API | File operations |
+| Google OAuth 2.0 | Authentication |
+
+---
+
+# Development
+
+## Requirements
+
+### Windows
+- Node.js (LTS)
+- npm
+- Rust and Cargo
+- Microsoft C++ Build Tools
+- WebView2 Runtime
+
+### Android
+- Node.js (LTS)
+- npm
+- Android Studio
+- Android SDK
+- Java development environment
+
+## Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/arunabhajana/Cirro.git
+cd Cirro
+```
+
+Install dependencies:
+
+```bash
 npm install
+```
+
+## Google Cloud Setup
+
+Cirro uses Google OAuth 2.0 for authentication and the Google Drive API for accessing user files.
+
+To configure Google services:
+
+1. Create a project in the [Google Cloud Console](https://console.cloud.google.com/).
+2. Enable the Google Drive API.
+3. Configure Google Auth Platform and the OAuth consent screen.
+4. Create the required OAuth client credentials.
+5. Configure the credentials for your development environment.
+
+### Required API
+
+Google Drive API:
+
+```text
+https://www.googleapis.com/auth/drive
+```
+
+### OAuth Credentials
+
+Create the appropriate OAuth clients for each platform.
+
+**Windows**
+
+Create a Desktop application OAuth client.
+
+**Android**
+
+Create an Android OAuth client with your application's package name and signing certificate SHA-1.
+
+Also configure a Web application OAuth client if required by the Android Google sign-in implementation.
+
+All OAuth clients should belong to the same Google Cloud project.
+
+## Environment Configuration
+
+Create local environment files from the provided templates, if available.
+
+Example:
+
+```bash
+cp .env.example .env
+```
+
+For Android-specific configuration:
+
+```bash
+cp android.env.example .env.local
+```
+
+Configure the required OAuth client IDs according to the authentication implementation.
+
+Example of a public client ID variable:
+
+```env
+VITE_ANDROID_GOOGLE_WEB_CLIENT_ID=your_client_id.apps.googleusercontent.com
+```
+
+The exact variable names should match the environment templates in the repository.
+
+Do not commit environment files, OAuth client secrets, signing keys or other private credentials.
+
+Never expose OAuth client secrets through frontend environment variables such as `VITE_*`.
+
+## Windows Development
+
+Start the frontend development server:
+
+```bash
 npm run dev
 ```
 
-Open http://127.0.0.1:1420 for the browser welcome-screen preview. Google sign-in requires the Tauri desktop app. Copy `.env.example` to `.env` and add a Google **Desktop app** OAuth client, following [the setup guide](docs/google-sign-in.md).
+Run the desktop application:
 
-```sh
-npm run build
+```bash
 npm run tauri dev
 ```
 
-The desktop development command requires Rust and the Windows Tauri prerequisites (Microsoft C++ Build Tools and WebView2).
+Build the application:
 
-Google sign-in opens the system browser and returns to Home after verification. The sidebar and Settings → Accounts show your real name, email, and profile photo, with sign-out controls. A session is saved in the OS credential store and verified with Google when the app restarts. Up to five Google accounts are supported. Enable Google Drive API, add the full Drive scope, and sign in again as described in [Drive setup](docs/drive-integration.md).
+```bash
+npm run build
+```
 
-Run `npm run test:release` for maintained UI and release-script checks and `cargo test --manifest-path src-tauri/Cargo.toml` for native OAuth callback checks. The callback integration test needs local loopback networking. Live Google consent and token exchange require your own configured credentials.
+## Android Development
 
-## Design interactions
+Start the Android development server:
 
-- Pin files and folders to Home or the sidebar using their context menus. Customize Home manages existing pins and widgets; sidebar customization lists only current pins with sorting, ordering and unpinning.
-- Browse folders, search all accounts or a single drive, switch list/grid views, and sort files.
-- Inspect file details, star files, move them to Trash, and restore them.
-- Create folders and choose a connected drive before adding local files. The upload dialog shows account storage and offers destination folders.
-- Explore account settings, storage breakdowns, and the Google-only welcome screen.
-- Use the account menu at the sidebar bottom to view your connected Google profile or sign out; settings is beside the menu. The file views use the connected Drive.
-- Use the New menu in the page toolbar to add local files, add a folder with its hierarchy, or create a folder. Home keeps pinned folders in the main area and shows up to four recent files below composition in the right pane (three in shorter desktop windows). Quick actions support arrow keys; dialogs keep keyboard focus inside and restore it on close.
-- Settings → Appearance offers Light, Dark, and System themes. The choice persists on this device; System follows operating-system appearance changes. Theme initialization runs before the app renders. Both themes cover the welcome screen, titlebar, browsing, accounts, widgets, settings, menus, and dialogs.
-- Inter is bundled locally for offline typography. The custom titlebar has centered search and native minimize, maximize/restore, and close controls. Window controls are disabled in browser previews and enabled in Tauri.
-- Customize Home includes optional Sync status, Starred files, Drive storage, and Trash overview widgets. Sync status reports Drive synchronization and the device's online state.
-- Right-click files, folders, sidebar shortcuts, or empty workspace areas for context-specific actions. Rename, star, pin, copy, cut, paste, move to Trash, and restore operate on Google Drive. Folder copies preserve hierarchy and prevent cycles and conflicting moves.
-- All files has back/forward/up navigation, folder breadcrumbs, sortable columns, list/grid views, multi-selection, pagination, and keyboard shortcuts (Ctrl+A/C/X/V, F2, Delete, Alt+arrows). The file list scrolls independently while pagination stays visible; view and page-size choices persist.
-- Customize sidebar can hide and reorder navigation, sort or reorder current shortcuts, unpin items, adjust density, and widen the sidebar. These choices persist on this device.
-- The icon beside Library opens sidebar customization; the matching icon beside Pinned opens pinned-item customization directly.
-- Settings has searchable controls for accounts, notifications, startup, file locations, sync, app lock, local storage and diagnostics.
-- File search matches names, accounts, and ancestor folder names. Combine terms, use quoted phrases, or filter with `type:pdf`, `account:work`, and `in:Projects`.
+```bash
+npm run dev:android
+```
 
-Single-click a file or folder for details in the right-hand inspector. Space opens Quick Look in a separate modal with preview content only; unavailable previews show file information instead. Double-click or Enter opens a folder or the full viewer. New folder supports six colors and eight icon styles with a live preview. File selection uses custom checkboxes with an indeterminate page state. [Preview formats and limits](docs/file-previews.md) cover local images, media, PDFs, text/code, ZIP listings, and Office/OpenDocument content.
+Sync the Android project:
 
-Cirro uses its transparent cloud logo in the application, native window, tray and release notifications. [Branding assets and imagegen prompts](docs/branding.md) document the generated originals.
+```bash
+npm run android:sync
+```
 
-The desktop window is fitted to the monitor work area before it appears. On Windows, maximization respects top/side/bottom taskbars, monitor offsets and display scaling. Vite ignores Rust build output to avoid Windows DLL watcher locks during native builds.
+Open the project in Android Studio:
 
-Drive metadata, folder structure, incoming shares, Trash, starred items, quotas, file actions, resumable uploads and on-demand previews use Google Drive. SQLite stores account-scoped metadata, thumbnails, cursors and workspace preferences; file contents are fetched on demand unless explicitly saved offline or staged for upload. See [integration details and limits](docs/drive-integration.md).
+```bash
+npm run android:open
+```
 
-## Version management
+Build a debug APK:
 
-Synchronize the npm manifests, Tauri configuration and Cargo manifests/lockfile before committing a release:
+```bash
+npm run android:apk
+```
 
-```powershell
+Run on a connected device:
+
+```bash
+npm run android:run
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+npm run test
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+Run release checks:
+
+```bash
+npm run test:release
+```
+
+Run Rust tests:
+
+```bash
+cargo test --manifest-path src-tauri/Cargo.toml
+```
+
+## Versioning
+
+Update the application version:
+
+```bash
 npm run version:bump -- 1.0.0
+```
+
+Other supported version increments:
+
+```bash
+npm run version:bump -- patch
+npm run version:bump -- minor
+npm run version:bump -- major
+```
+
+Check version consistency:
+
+```bash
 npm run version:check
 ```
 
-You can use `patch`, `minor` or `major` instead of an explicit version, or add `--dry-run` to preview changes. No Git commit or tag is created. Builds check that the versions agree before packaging. Release CI uses the same version-update helper when applying the tag version. Release content is archived in `src/releases/<version>.json`. The app and GitHub release use the same categorized notes. Add the matching JSON before tagging: CI refuses a release without its notes. `src/releaseContent.ts` selects the entry shown in About.
+---
 
-Onboarding uses built-in demo items and works with an empty Drive. Practice actions are optional and never change real files. The guide appears automatically on first launch, before Google sign-in. Version 1.0.0 has no What’s new screen; later releases can show one after a version upgrade. About contains one collapsible text release entry, with Added, Improved, Fixed, Security & privacy and Limitations sections.
+# Contributing
 
-Appearance settings include five accent colours, system/reduced motion and reduced transparency. Preferences apply immediately, persist on this device, and are restored before the interface paints. About and release-note version labels use the package version synchronized by the version-bump command and release CI.
+Contributions and suggestions are welcome.
 
-Cirro supports up to five connected Google accounts on Windows and three on Android. Unified and every account keep independent Homes; Windows also keeps separate sidebar navigation, pins, spacing and width for each view. Existing shared sidebar preferences migrate to Unified. Storage uses a compact summary with total usage, capacity, an account-coloured horizontal breakdown, and a labelled legend based on the current quota snapshot. Support includes a test-access request form which opens an email to arunabhajana@gmail.com for review and sending; it does not send silently or require embedded mail credentials. The same request is available from the sign-in screen for accounts not yet approved for testing.
+1. Fork the repository.
+2. Create a branch for your changes.
+3. Make your changes.
+4. Run the relevant tests.
+5. Submit a pull request describing your changes.
 
-Android CI checks pull requests and main changes. Version tags build the signed Android APK together with the Windows release, and publish only after the APK and updater assets are verified. Android detects stable release APKs, downloads updates with progress and hands installation to Android. See [Android setup, signing and release requirements](native/android/README.md#cicd-and-launcher-assets).
+For larger changes, open an issue first to discuss the proposed implementation.
+
+## Bug Reports
+
+If you encounter a problem, open an issue with:
+
+- A description of the problem.
+- Steps to reproduce it.
+- Expected and actual behaviour.
+- Application version and platform.
+- Screenshots or logs, if relevant.
+
+[Report an issue](https://github.com/arunabhajana/Cirro/issues)
+
+## Security
+
+Do not include access tokens, OAuth secrets, signing credentials or personal account information in bug reports or pull requests.
+
+For security concerns, contact the repository maintainer privately rather than opening a public issue.
+
+## License
+
+The project license will be specified here once a LICENSE file has been added.
+
+---
+
+<p align="center">
+  <strong>Cirro</strong>
+  <br />
+  Built by <a href="https://github.com/arunabhajana">Arun</a>
+</p>
